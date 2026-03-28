@@ -12,6 +12,7 @@
 #endif
 
 #include "../core/Core.h"
+#include "../core/MemoryArena.h"
 #include "ThemeManager.h"
 
 namespace sumi {
@@ -63,58 +64,101 @@ void PluginHostState::enter(Core& core) {
     Serial.println("[PLUGIN_HOST] Switched to landscape mode");
   }
 
-  pluginRenderer_.setRegularFontId(THEME.uiFontId);
-  pluginRenderer_.setSmallFontId(THEME.smallFontId);
+  pluginRenderer_.setRegularFontId(THEME.readerFontId);
+  pluginRenderer_.setSmallFontId(THEME.uiFontId);
   plugin_->init(renderer_.getScreenWidth(), renderer_.getScreenHeight());
   plugin_->needsFullRedraw = true;
 
 #if FEATURE_BLUETOOTH
-  // Auto-scan for BLE keyboard when launching Notes (needs keyboard input)
-  if (strcmp(plugin_->name(), "Notes") == 0 && !ble::isConnected()) {
-    // Show scanning message
-    renderer_.clearScreen(0xFF);
-    const int font = THEME.uiFontId;
-    renderer_.drawCenteredText(font, renderer_.getScreenHeight() / 2 - 20,
-                               "Scanning for keyboard...", true, EpdFontFamily::BOLD);
-    renderer_.drawCenteredText(font, renderer_.getScreenHeight() / 2 + 20,
-                               "Make sure it's in pairing mode", true);
-    renderer_.displayBuffer(EInkDisplay::FAST_REFRESH);
+  // BLE keyboard handling for Notes
+  if (strcmp(plugin_->name(), "Notes") == 0) {
+    if (!ble::isReady()) {
+      // Release memory arena to free heap for BLE stack (~40-50KB needed)
+      if (sumi::MemoryArena::isInitialized()) {
+        sumi::MemoryArena::release();
+        Serial.printf("[PLUGIN_HOST] Arena released for BLE. Free heap: %u\n", ESP.getFreeHeap());
+      }
+      ble::init();
+      Serial.printf("[PLUGIN_HOST] BLE init done. Free heap: %u\n", ESP.getFreeHeap());
+    }
 
-    ble::init();
-    ble::startScan(6);
-
-    // Auto-connect to first HID device found
-    bool connected = false;
-    for (int i = 0; i < ble::scanResultCount(); i++) {
-      const BleDevice* dev = ble::scanResult(i);
-      if (dev && dev->hasHID) {
+    if (ble::isConnected()) {
+      // Already connected — nothing to do
+      Serial.println("[PLUGIN_HOST] BLE keyboard already connected");
+    } else {
+      // Try to reconnect to saved keyboard address first
+      const char* savedAddr = core.settings.bleKeyboard;
+      if (savedAddr[0] != '\0') {
+        // Show brief reconnect message
         renderer_.clearScreen(0xFF);
+        const int font = THEME.uiFontId;
         char msg[64];
-        snprintf(msg, sizeof(msg), "Connecting: %s", dev->name);
-        renderer_.drawCenteredText(font, renderer_.getScreenHeight() / 2, msg, true);
+        snprintf(msg, sizeof(msg), "Connecting keyboard...");
+        renderer_.drawCenteredText(font, renderer_.getScreenHeight() / 2,
+                                   msg, true, EpdFontFamily::BOLD);
         renderer_.displayBuffer(EInkDisplay::FAST_REFRESH);
 
-        if (ble::connectTo(i)) {
-          connected = true;
-          Serial.printf("[PLUGIN_HOST] Auto-connected BLE: %s\n", dev->name);
+        bool connected = ble::reconnect(savedAddr);
+        if (connected) {
+          Serial.printf("[PLUGIN_HOST] Reconnected to saved keyboard: %s\n", savedAddr);
+        } else {
+          // Saved device not available — enter without keyboard, user can scan later
+          Serial.println("[PLUGIN_HOST] Saved keyboard not found, continuing without");
+          renderer_.clearScreen(0xFF);
+          renderer_.drawCenteredText(font, renderer_.getScreenHeight() / 2 - 20,
+                                     "Keyboard not found", true, EpdFontFamily::BOLD);
+          renderer_.drawCenteredText(font, renderer_.getScreenHeight() / 2 + 20,
+                                     "Use Settings > Bluetooth to connect", true);
+          renderer_.displayBuffer(EInkDisplay::FAST_REFRESH);
+          delay(1500);
         }
-        break;
+      } else {
+        // No saved keyboard — scan once briefly
+        renderer_.clearScreen(0xFF);
+        const int font = THEME.uiFontId;
+        renderer_.drawCenteredText(font, renderer_.getScreenHeight() / 2 - 20,
+                                   "Scanning for keyboard...", true, EpdFontFamily::BOLD);
+        renderer_.drawCenteredText(font, renderer_.getScreenHeight() / 2 + 20,
+                                   "Make sure it is in pairing mode", true);
+        renderer_.displayBuffer(EInkDisplay::FAST_REFRESH);
+
+        ble::startScan(4);  // Short 4 second scan instead of 6
+
+        // Auto-connect to first HID device found
+        bool connected = false;
+        for (int i = 0; i < ble::scanResultCount(); i++) {
+          const BleDevice* dev = ble::scanResult(i);
+          if (dev && dev->hasHID) {
+            renderer_.clearScreen(0xFF);
+            char msg[64];
+            snprintf(msg, sizeof(msg), "Connecting: %s", dev->name);
+            renderer_.drawCenteredText(font, renderer_.getScreenHeight() / 2,
+                                       msg, true);
+            renderer_.displayBuffer(EInkDisplay::FAST_REFRESH);
+
+            if (ble::connectTo(i)) {
+              connected = true;
+              // Save address for future reconnects
+              strncpy(core.settings.bleKeyboard, dev->addr,
+                      sizeof(core.settings.bleKeyboard) - 1);
+              core.settings.saveToFile();
+              Serial.printf("[PLUGIN_HOST] Connected and saved: %s\n", dev->addr);
+            }
+            break;
+          }
+        }
+
+        if (!connected) {
+          renderer_.clearScreen(0xFF);
+          renderer_.drawCenteredText(font, renderer_.getScreenHeight() / 2 - 10,
+                                     "No keyboard found", true);
+          renderer_.drawCenteredText(font, renderer_.getScreenHeight() / 2 + 20,
+                                     "Entering without keyboard", true);
+          renderer_.displayBuffer(EInkDisplay::FAST_REFRESH);
+          delay(1000);
+        }
       }
     }
-
-    if (!connected && ble::scanResultCount() == 0) {
-      renderer_.clearScreen(0xFF);
-      renderer_.drawCenteredText(font, renderer_.getScreenHeight() / 2 - 10,
-                                 "No keyboard found", true);
-      renderer_.drawCenteredText(font, renderer_.getScreenHeight() / 2 + 20,
-                                 "Starting without keyboard", true);
-      renderer_.displayBuffer(EInkDisplay::FAST_REFRESH);
-      delay(1500);
-    }
-
-    // Force full redraw after scan screens
-    plugin_->needsFullRedraw = true;
-    needsRender_ = true;
   }
 #endif
 }
@@ -153,7 +197,7 @@ PluginButton PluginHostState::translateButton(Button btn) const {
 StateTransition PluginHostState::update(Core& core) {
   if (goBack_ || !plugin_) {
     goBack_ = false;
-    return StateTransition::to(StateId::PluginList);
+    return StateTransition::to(returnState_);
   }
 
   Event e;
@@ -281,6 +325,75 @@ StateTransition PluginHostState::update(Core& core) {
   }
 #endif
 
+// Handle plugin action requests
+  if (plugin_ && plugin_->pendingAction != PluginInterface::HostAction::None) {
+    auto action = plugin_->pendingAction;
+    plugin_->pendingAction = PluginInterface::HostAction::None;
+
+#if FEATURE_BLUETOOTH
+    if (action == PluginInterface::HostAction::BleScan) {
+      Serial.println("[PLUGIN_HOST] BLE scan requested by plugin");
+
+      // Show scanning screen
+      renderer_.clearScreen(0xFF);
+      const int font = THEME.uiFontId;
+      renderer_.drawCenteredText(font, renderer_.getScreenHeight() / 2 - 20,
+                                 "Scanning for keyboard...", true, EpdFontFamily::BOLD);
+      renderer_.drawCenteredText(font, renderer_.getScreenHeight() / 2 + 20,
+                                 "Make sure it is in pairing mode", true);
+      renderer_.displayBuffer(EInkDisplay::FAST_REFRESH);
+
+      if (!ble::isReady()) {
+        if (sumi::MemoryArena::isInitialized()) sumi::MemoryArena::release();
+        ble::init();
+      }
+      ble::startScan(6);
+
+      bool connected = false;
+      for (int i = 0; i < ble::scanResultCount(); i++) {
+        const BleDevice* dev = ble::scanResult(i);
+        if (dev && dev->hasHID) {
+          renderer_.clearScreen(0xFF);
+          char msg[64];
+          snprintf(msg, sizeof(msg), "Connecting: %s", dev->name);
+          renderer_.drawCenteredText(font, renderer_.getScreenHeight() / 2,
+                                     msg, true);
+          renderer_.displayBuffer(EInkDisplay::FAST_REFRESH);
+
+          if (ble::connectTo(i)) {
+            connected = true;
+            // Save address for future reconnects
+            strncpy(core.settings.bleKeyboard, dev->addr,
+                    sizeof(core.settings.bleKeyboard) - 1);
+            core.settings.saveToFile();
+            Serial.printf("[PLUGIN_HOST] Scan connected: %s\n", dev->addr);
+
+            renderer_.clearScreen(0xFF);
+            snprintf(msg, sizeof(msg), "Connected: %s", dev->name);
+            renderer_.drawCenteredText(font, renderer_.getScreenHeight() / 2,
+                                       msg, true, EpdFontFamily::BOLD);
+            renderer_.displayBuffer(EInkDisplay::FAST_REFRESH);
+            delay(1000);
+          }
+          break;
+        }
+      }
+
+      if (!connected) {
+        renderer_.clearScreen(0xFF);
+        renderer_.drawCenteredText(font, renderer_.getScreenHeight() / 2 - 10,
+                                   "No keyboard found", true, EpdFontFamily::BOLD);
+        renderer_.drawCenteredText(font, renderer_.getScreenHeight() / 2 + 20,
+                                   "Make sure it is in pairing mode", true);
+        renderer_.displayBuffer(EInkDisplay::FAST_REFRESH);
+        delay(1500);
+      }
+
+      plugin_->needsFullRedraw = true;
+      needsRender_ = true;
+    }
+#endif
+  }
   // Periodic update for timer/animation plugins
   PluginRunMode mode = plugin_->runMode();
   if (mode == PluginRunMode::WithUpdate || mode == PluginRunMode::Animation) {
@@ -304,7 +417,7 @@ StateTransition PluginHostState::update(Core& core) {
 
   if (goBack_) {
     goBack_ = false;
-    return StateTransition::to(StateId::PluginList);
+    return StateTransition::to(returnState_);
   }
 
   return StateTransition::stay(StateId::PluginHost);

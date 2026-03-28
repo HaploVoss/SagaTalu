@@ -28,12 +28,14 @@ class PluginHostState : public State {
 
   // Set which plugin to launch (called before transition)
   void setPluginFactory(PluginFactory factory) { factory_ = factory; }
-
- private:
+  void setReturnState(StateId state) { returnState_ = state; }
+ 
+  private:
   GfxRenderer& renderer_;
   PluginRenderer pluginRenderer_;
   PluginInterface* plugin_ = nullptr;
   PluginFactory factory_ = nullptr;
+  StateId returnState_ = StateId::PluginList;
   bool goBack_ = false;
   bool needsRender_ = true;
   int partialCount_ = 0;

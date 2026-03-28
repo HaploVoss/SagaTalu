@@ -70,14 +70,12 @@
 #endif
 
 // Productivity
-#include "plugins/TodoList.h"
-#include "plugins/Notes.h"
-#include "plugins/ToolSuite.h"
-#include "plugins/Images.h"
-#include "plugins/Maps.h"
 
 #if FEATURE_FLASHCARDS
 #include "plugins/Flashcards.h"
+#endif
+
+#if FEATURE_BLUETOOTH
 #include "ble/BleFileTransfer.h"
 #endif
 #endif  // FEATURE_PLUGINS
@@ -186,9 +184,9 @@ static sumi::StateMachine stateMachine;
 
 // Plugin system instances
 #if FEATURE_PLUGINS
-static sumi::PluginRenderer pluginRenderer(renderer);
+sumi::PluginRenderer pluginRenderer(renderer);
 static sumi::PluginListState pluginListState(renderer);
-static sumi::PluginHostState pluginHostState(renderer);
+sumi::PluginHostState pluginHostState(renderer);
 #endif
 
 RTC_DATA_ATTR uint16_t rtcPowerButtonDurationMs = 400;
@@ -555,22 +553,6 @@ void initSystem() {
     return new sumi::SumiBoyRomPicker(pluginRenderer);
   });
 #endif  // FEATURE_GAMES
-
-  sumi::PluginListState::registerPlugin("Notes", "Productivity", []() -> sumi::PluginInterface* {
-    return new sumi::NotesApp(pluginRenderer);
-  });
-  sumi::PluginListState::registerPlugin("Todo List", "Productivity", []() -> sumi::PluginInterface* {
-    return new sumi::TodoApp(pluginRenderer);
-  });
-  sumi::PluginListState::registerPlugin("Tools", "Productivity", []() -> sumi::PluginInterface* {
-    return new sumi::ToolSuiteApp(pluginRenderer);
-  });
-  sumi::PluginListState::registerPlugin("Images", "Productivity", []() -> sumi::PluginInterface* {
-    return new sumi::ImagesApp(pluginRenderer);
-  });
-  sumi::PluginListState::registerPlugin("Maps", "Productivity", []() -> sumi::PluginInterface* {
-    return new sumi::MapsApp(pluginRenderer);
-  });
 
 #if FEATURE_FLASHCARDS
   sumi::PluginListState::registerPlugin("Flashcards", "Learning", []() -> sumi::PluginInterface* {

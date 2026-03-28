@@ -76,6 +76,16 @@ class PluginInterface {
   virtual bool handlesOwnRefresh() const { return false; }
 
   bool needsFullRedraw = true;
+
+  // Action requests — plugin signals host to perform an action
+  // Returns true if the host handled the request
+  enum class HostAction : uint8_t {
+    None = 0,
+    BleScan,        // Scan for BLE keyboard
+    BleDisconnect,  // Disconnect current BLE device
+  };
+
+  HostAction pendingAction = HostAction::None;
 };
 
 }  // namespace sumi

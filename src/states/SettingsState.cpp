@@ -27,6 +27,12 @@
 #include "PluginListState.h"
 #endif
 
+// Forward declaration for Notes direct launch
+extern sumi::PluginHostState pluginHostState;
+extern sumi::PluginRenderer pluginRenderer;
+// createNotesApp is defined in Notes.h, included via main.cpp
+extern sumi::PluginInterface* createNotesApp(sumi::PluginRenderer& r);
+
 namespace sumi {
 
 SettingsState::SettingsState(GfxRenderer& renderer)
@@ -67,6 +73,7 @@ void SettingsState::enter(Core& core) {
   needsRender_ = true;
   goHome_ = false;
   goApps_ = false;
+  goNotes_ = false;
   themeWasChanged_ = false;
   pendingAction_ = 0;
 }
@@ -283,6 +290,16 @@ StateTransition SettingsState::update(Core& core) {
     goApps_ = false;
     return StateTransition::to(StateId::PluginList);
   }
+
+  if (goNotes_) {
+    goNotes_ = false;
+    static sumi::PluginRenderer* s_pr = &pluginRenderer;
+    pluginHostState.setPluginFactory([]() -> sumi::PluginInterface* {
+      return createNotesApp(*s_pr);
+    });
+    pluginHostState.setReturnState(StateId::Settings);
+    return StateTransition::to(StateId::PluginHost);
+  }
 #endif
 
   if (goHome_) {
@@ -307,6 +324,10 @@ void SettingsState::render(Core& core) {
         // Check if transfer status changed
         updateBleTransfer();
         viewNeedsRender = needsRender_;
+        break;
+      case SettingsScreen::WifiTransfer:
+        if (wifiTransfer_) wifiTransfer_->handleClient();
+        viewNeedsRender = (wifiTransferLastRender_ == 0);
         break;
       case SettingsScreen::Reader:
         viewNeedsRender = readerView_.needsRender;
@@ -351,6 +372,9 @@ void SettingsState::render(Core& core) {
     case SettingsScreen::BleTransfer:
       renderBleTransfer();
       break;
+    case SettingsScreen::WifiTransfer:
+      if (wifiTransferLastRender_ == 0) renderWifiTransfer();
+      break;  
     case SettingsScreen::Reader:
       ui::render(renderer_, THEME, readerView_);
       readerView_.needsRender = false;
@@ -391,14 +415,12 @@ void SettingsState::render(Core& core) {
 void SettingsState::openSelected() {
   int idx = menuView_.selected;
 
-#if FEATURE_PLUGINS
-  // "Apps" is index 0 — transitions to PluginList state
+// "Notes" is index 0 — launch Notes plugin directly
   if (idx == 0) {
-    goApps_ = true;
+    goNotes_ = true;
     return;
   }
-  idx -= 1;  // Shift remaining items down (Apps only; App Visibility moved to Device)
-#endif
+  idx -= 1;  // Shift remaining items down
 
   // idx 0=HomeArt, 1=Wireless Transfer, 2=Reader, 3=Device, then BT/Cleanup/SystemInfo
   switch (idx) {
@@ -408,8 +430,8 @@ void SettingsState::openSelected() {
       currentScreen_ = SettingsScreen::HomeArt;
       break;
     case 1:  // Wireless Transfer
-      enterBleTransfer();
-      currentScreen_ = SettingsScreen::BleTransfer;
+      enterWifiTransfer();
+      currentScreen_ = SettingsScreen::WifiTransfer;
       break;
     case 2:  // Reader
       loadReaderSettings();
@@ -483,6 +505,11 @@ void SettingsState::goBack(Core& core) {
       deviceView_.needsRender = true;
       break;
 #endif
+    case SettingsScreen::WifiTransfer:
+      exitWifiTransfer();
+      currentScreen_ = SettingsScreen::Menu;
+      menuView_.needsRender = true;
+      break;
     case SettingsScreen::BleTransfer:
       // Block back during active transfer
       if (ble_transfer::isTransferring()) {
@@ -534,6 +561,10 @@ void SettingsState::handleConfirm(Core& core) {
       // Apply the selected theme
       saveHomeArtSettings();
       needsRender_ = true;
+      break;
+    
+    case SettingsScreen::WifiTransfer:
+      // OK does nothing on WiFi transfer screen — just wait for files
       break;
 
     case SettingsScreen::BleTransfer:
@@ -1772,5 +1803,116 @@ void SettingsState::renderBluetooth() {
   renderer_.displayBuffer(EInkDisplay::FAST_REFRESH);
 }
 #endif
+
+void SettingsState::enterWifiTransfer() {
+  Serial.println("[WIFI] Entering WiFi transfer screen");
+
+  // Free as much RAM as possible before starting WiFi
+  sumi::MemoryArena::release();
+
+#if FEATURE_BLUETOOTH
+  // BLE and WiFi share the radio — deinit BLE to free ~60KB for WiFi stack
+  if (ble::isReady()) {
+    ble_transfer::deinit();
+    ble::deinit();
+    Serial.printf("[WIFI] BLE deinit done. Free heap: %u\n", ESP.getFreeHeap());
+  }
+#endif
+
+  Serial.printf("[WIFI] Free heap before WiFi start: %u\n", ESP.getFreeHeap());
+  wifiTransfer_ = new WifiTransfer();
+  wifiTransfer_->begin("FiberLite", "Monteboy1701");
+  wifiTransferLastRender_ = 0;
+  needsRender_ = true;
+}
+
+void SettingsState::renderWifiTransfer() {
+  unsigned long now = millis();
+  if (wifiTransferLastRender_ > 0) return;
+  wifiTransferLastRender_ = now;
+
+  renderer_.clearScreen(THEME.backgroundColor);
+  const Theme& t = THEME;
+  ui::title(renderer_, t, t.screenMarginTop, "WiFi Transfer");
+
+  int y = 160;
+
+  if (wifiTransfer_ && wifiTransfer_->isRunning()) {
+    if (wifiTransfer_->isApMode()) {
+      // AP mode fallback — show connection instructions
+      renderer_.drawCenteredText(t.readerFontIdMedium, y,
+        "Connect to WiFi network:", t.primaryTextBlack, EpdFontFamily::BOLD);
+      y += 56;
+      renderer_.drawCenteredText(t.readerFontIdMedium, y,
+        "SUMI-Transfer", t.primaryTextBlack);
+      y += 48;
+      renderer_.drawCenteredText(t.menuFontId, y,
+        "Password: sumipass", t.secondaryTextBlack);
+      y += 72;
+      renderer_.drawCenteredText(t.menuFontId, y,
+        "Then open in browser:", t.secondaryTextBlack);
+      y += 40;
+      String url = "http://" + wifiTransfer_->ipAddress();
+      renderer_.drawCenteredText(t.readerFontIdMedium, y,
+        url.c_str(), t.primaryTextBlack, EpdFontFamily::BOLD);
+      y += 72;
+      renderer_.drawCenteredText(t.menuFontId, y,
+        "Drag and drop EPUB or TXT files", t.secondaryTextBlack);
+    } else {
+      // Home network — clean simple display
+      renderer_.drawCenteredText(t.menuFontId, y,
+        "Open in any browser on your network:", t.secondaryTextBlack);
+      y += 56;
+      String url = "http://" + wifiTransfer_->ipAddress();
+      renderer_.drawCenteredText(t.readerFontIdMedium, y,
+        url.c_str(), t.primaryTextBlack, EpdFontFamily::BOLD);
+      y += 48;
+      renderer_.drawCenteredText(t.menuFontId, y,
+        "or", t.secondaryTextBlack);
+      y += 48;
+      renderer_.drawCenteredText(t.readerFontIdMedium, y,
+        "http://sumi.local", t.primaryTextBlack, EpdFontFamily::BOLD);
+      y += 80;
+      renderer_.drawCenteredText(t.menuFontId, y,
+        "Drag and drop EPUB or TXT files", t.secondaryTextBlack);
+      y += 44;
+      renderer_.drawCenteredText(t.menuFontId, y,
+        "Press Back when done", t.secondaryTextBlack);
+    }
+  } else {
+    renderer_.drawCenteredText(t.readerFontIdMedium, y,
+      "Starting WiFi...", t.primaryTextBlack);
+  }
+
+  ui::ButtonBar buttons{"Back", "", "", ""};
+  ui::buttonBar(renderer_, t, buttons);
+  renderer_.displayBuffer(EInkDisplay::FAST_REFRESH);
+}
+
+void SettingsState::exitWifiTransfer() {
+  Serial.println("[WIFI] Exiting WiFi transfer screen");
+  if (wifiTransfer_) {
+    wifiTransfer_->stop();
+    delete wifiTransfer_;
+    wifiTransfer_ = nullptr;
+  }
+  Serial.printf("[WIFI] Free heap after WiFi stop: %u\n", ESP.getFreeHeap());
+
+  // Restore memory arena
+  if (!sumi::MemoryArena::isInitialized()) {
+    sumi::MemoryArena::init();
+  }
+
+#if FEATURE_BLUETOOTH
+  // Reinitialize BLE so keyboard works after WiFi session
+  if (!ble::isReady()) {
+    ble::init();
+    Serial.println("[WIFI] BLE re-initialized after WiFi");
+  }
+#endif
+
+  renderer_.clearScreen(THEME.backgroundColor);
+  renderer_.displayBuffer(EInkDisplay::FULL_REFRESH);
+}
 
 }  // namespace sumi

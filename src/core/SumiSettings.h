@@ -107,6 +107,10 @@ struct Settings {
   // Name of directory under /config/fonts/ containing regular.epdfont
   char readerFont[32] = "";
 
+  // WiFi credentials for file transfer
+  char wifiSsid[64] = "";
+  char wifiPassword[64] = "";
+
   // Runtime flags (not persisted)
   bool isFirstBoot = false;  // True when /.sumi doesn't exist yet at boot
 

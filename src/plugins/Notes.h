@@ -27,7 +27,7 @@ class NotesApp : public PluginInterface {
 public:
   const char* name() const override { return "Notes"; }
   PluginRunMode runMode() const override { return PluginRunMode::WithUpdate; }
-  bool wantsLandscape() const override { return true; }
+  bool wantsLandscape() const override { return false; }
 
   static constexpr int MAX_NOTES = 20;
   static constexpr int MAX_NAME_LEN = 32;
@@ -153,6 +153,7 @@ void NotesApp::reset() {
 void NotesApp::init(int screenW, int screenH) {
   W_ = screenW;
   H_ = screenH;
+  // Use the regular reader font instead of the default small UI font
   computeLayout();
   scanNotes();
   screen_ = SCREEN_FILE_LIST;
@@ -459,7 +460,7 @@ bool NotesApp::handleInput(PluginButton btn) {
         }
         return true;
       case PluginButton::Down:
-        if (listCursor_ < noteCount_) {
+        if (listCursor_ < noteCount_ + 1) {  // +1 for "Scan for Keyboard"
           listCursor_++;
           if (listCursor_ >= listScroll_ + itemsPerPage_) listScroll_++;
         }
@@ -469,6 +470,10 @@ bool NotesApp::handleInput(PluginButton btn) {
           newName_[0] = '\0';
           newNameLen_ = 0;
           screen_ = SCREEN_NEW_NOTE;
+        } else if (listCursor_ == noteCount_ + 1) {
+          // Request BLE scan from host
+          pendingAction = HostAction::BleScan;
+          needsFullRedraw = true;
         } else {
           openNote(listCursor_);
           screen_ = SCREEN_EDITOR;
@@ -596,7 +601,7 @@ void NotesApp::drawFileList() {
   drawStatusBar("Notes", "");
 
   int y = statusBarH_ + 8;
-  int displayCount = noteCount_ + 1;
+  int displayCount = noteCount_ + 2;
 
   for (int i = listScroll_; i < displayCount && i < listScroll_ + itemsPerPage_; i++) {
     bool sel = (i == listCursor_);
@@ -613,6 +618,8 @@ void NotesApp::drawFileList() {
 
     if (i == noteCount_) {
       d_.print("+ New Note");
+    } else if (i == noteCount_ + 1) {
+      d_.print("Scan for Keyboard");
     } else {
       char display[MAX_NAME_LEN];
       strncpy(display, notes_[i], MAX_NAME_LEN - 1);
@@ -633,7 +640,11 @@ void NotesApp::drawFileList() {
 
   // Bottom hint
   d_.setCursor(marginX_, H_ - 20);
+  #if FEATURE_BLUETOOTH
+  d_.print("OK: Open    Back: Exit    Down: Scan KB");
+  #else
   d_.print("OK: Open    Back: Exit");
+  #endif
 }
 
 void NotesApp::drawEditor() {
@@ -739,5 +750,6 @@ void NotesApp::drawNewNote() {
 }
 
 }  // namespace sumi
-
+// Forward declaration for Notes factory
+sumi::PluginInterface* createNotesApp(sumi::PluginRenderer& r);
 #endif  // FEATURE_PLUGINS

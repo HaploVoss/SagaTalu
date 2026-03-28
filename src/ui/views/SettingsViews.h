@@ -18,10 +18,10 @@ namespace ui {
 
 struct SettingsMenuView {
 #if FEATURE_PLUGINS && FEATURE_BLUETOOTH
-  static constexpr const char* const ITEMS[] = {"Apps", "Home Art", "Wireless Transfer", "Reader", "Device", "Bluetooth", "Cleanup", "System Info"};
+  static constexpr const char* const ITEMS[] = {"Notes", "Home Art", "Wireless Transfer", "Reader", "Device", "Bluetooth", "Cleanup", "System Info"};
   static constexpr int ITEM_COUNT = 8;
 #elif FEATURE_PLUGINS
-  static constexpr const char* const ITEMS[] = {"Apps", "Home Art", "Wireless Transfer", "Reader", "Device", "Cleanup", "System Info"};
+  static constexpr const char* const ITEMS[] = {"Notes", "Home Art", "Wireless Transfer", "Reader", "Device", "Cleanup", "System Info"};
   static constexpr int ITEM_COUNT = 7;
 #elif FEATURE_BLUETOOTH
   static constexpr const char* const ITEMS[] = {"Home Art", "Wireless Transfer", "Reader", "Device", "Bluetooth", "Cleanup", "System Info"};

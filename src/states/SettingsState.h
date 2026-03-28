@@ -6,6 +6,10 @@
 #include "../ui/views/SettingsViews.h"
 #include "State.h"
 
+#include "../wifi/WifiTransfer.h"
+
+#include "PluginHostState.h"
+
 class GfxRenderer;
 
 namespace sumi {
@@ -13,7 +17,8 @@ namespace sumi {
 enum class SettingsScreen : uint8_t {
   Menu,
   HomeArt,
-  BleTransfer,  // Wireless file transfer
+  BleTransfer,  // Wireless file transfer (BLE Legacy)
+  WifiTransfer, // Wireless file transfer (WiFi)
   Reader,
   Device,
   Cleanup,
@@ -45,11 +50,16 @@ class SettingsState : public State {
   bool needsRender_;
   bool goHome_;
   bool goApps_ = false;
+  bool goNotes_ = false;
   bool themeWasChanged_;
 
   // Pending action for confirmation dialog
   // 0=none, 10=Clear Book Cache, 11=Clear Device Storage, 12=Factory Reset
   uint8_t pendingAction_;
+
+  // WiFi Transfer state
+  WifiTransfer* wifiTransfer_ = nullptr;
+  unsigned long wifiTransferLastRender_ = 0;
   
   // BLE Transfer state
   bool bleTransferEnabled_ = false;
@@ -100,6 +110,10 @@ class SettingsState : public State {
   void enterBleTransfer();
   void renderBleTransfer();
   void updateBleTransfer();
+  // WiFi File Transfer
+  void enterWifiTransfer();
+  void renderWifiTransfer();
+  void exitWifiTransfer();
 
 #if FEATURE_BLUETOOTH
   // Bluetooth screen state

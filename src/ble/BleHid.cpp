@@ -601,10 +601,10 @@ void init() {
     NimBLEDevice::init("SumiReader");
     NimBLEDevice::setPower(9);  // Max power for best range
 
-    // Enable bonding for HID devices (they require persistent pairing).
-    // bonding=true, MITM=false, SC=true → "just works" pairing with bonding.
-    // IO capability defaults to NoInputNoOutput which is correct for a headless device.
-    NimBLEDevice::setSecurityAuth(true, false, true);
+    // Use legacy pairing (SC=false) for broader keyboard compatibility.
+    // Most HID keyboards including budget/generic ones support this.
+    // bonding=true, MITM=false, SC=false
+    NimBLEDevice::setSecurityAuth(true, false, false);
 
     _initialized = true;
     Serial.printf("[BLE] Init done, free heap after: %lu\n", (unsigned long)ESP.getFreeHeap());
