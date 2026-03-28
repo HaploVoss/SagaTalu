@@ -224,6 +224,7 @@ void WifiTransfer::setupRoutes() {
   server_->on("/list", HTTP_GET, [this]() { handleFileList(); });
   server_->on("/download", HTTP_GET, [this]() { handleDownload(); });
   server_->on("/export-bg", HTTP_POST, [this]() { handleExportBg(); });
+  server_->on("/delete", HTTP_POST, [this]() { handleDelete(); });
   server_->on("/mkdir", HTTP_POST, [this]() { handleMkdir(); });
   server_->on("/upload", HTTP_POST,
     [this]() { server_->send(200, "text/plain", "OK"); },
