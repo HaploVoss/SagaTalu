@@ -18,9 +18,10 @@ constexpr uint32_t SETTINGS_MAGIC = 0x53585050;
 // Minimum version we can read (allows backward compatibility)
 constexpr uint8_t MIN_SETTINGS_VERSION = 3;
 // Version 13: Added reader font family override
-constexpr uint8_t SETTINGS_FILE_VERSION = 13;
+// Version 14: Added WiFi SSID and password
+constexpr uint8_t SETTINGS_FILE_VERSION = 14;
 // Increment this when adding new persisted settings fields
-constexpr uint8_t SETTINGS_COUNT = 32;
+constexpr uint8_t SETTINGS_COUNT = 34;
 }  // namespace
 
 Result<void> Settings::save(drivers::Storage& storage) const {
@@ -70,6 +71,8 @@ Result<void> Settings::save(drivers::Storage& storage) const {
   outputFile.write(reinterpret_cast<const uint8_t*>(hiddenPluginMask), sizeof(hiddenPluginMask));
   serialization::writePod(outputFile, bleTimeout);
   outputFile.write(reinterpret_cast<const uint8_t*>(readerFont), sizeof(readerFont));
+  outputFile.write(reinterpret_cast<const uint8_t*>(wifiSsid), sizeof(wifiSsid));
+  outputFile.write(reinterpret_cast<const uint8_t*>(wifiPassword), sizeof(wifiPassword));
   outputFile.close();
 
   Serial.printf("[%lu] [SET] Settings saved to file\n", millis());
@@ -188,6 +191,12 @@ Result<void> Settings::load(drivers::Storage& storage) {
     inputFile.read(reinterpret_cast<uint8_t*>(readerFont), sizeof(readerFont));
     readerFont[sizeof(readerFont) - 1] = '\0';
     if (++settingsRead >= fileSettingsCount) break;
+    inputFile.read(reinterpret_cast<uint8_t*>(wifiSsid), sizeof(wifiSsid));
+    wifiSsid[sizeof(wifiSsid) - 1] = '\0';
+    if (++settingsRead >= fileSettingsCount) break;
+    inputFile.read(reinterpret_cast<uint8_t*>(wifiPassword), sizeof(wifiPassword));
+    wifiPassword[sizeof(wifiPassword) - 1] = '\0';
+    if (++settingsRead >= fileSettingsCount) break;
   } while (false);
 
   // Migrate font size from version < 8 (enum values shifted +1 for FontXSmall)
@@ -291,6 +300,8 @@ bool Settings::saveToFile() const {
   outputFile.write(reinterpret_cast<const uint8_t*>(hiddenPluginMask), sizeof(hiddenPluginMask));
   serialization::writePod(outputFile, bleTimeout);
   outputFile.write(reinterpret_cast<const uint8_t*>(readerFont), sizeof(readerFont));
+  outputFile.write(reinterpret_cast<const uint8_t*>(wifiSsid), sizeof(wifiSsid));
+  outputFile.write(reinterpret_cast<const uint8_t*>(wifiPassword), sizeof(wifiPassword));
   outputFile.close();
 
   Serial.printf("[%lu] [SET] Settings saved to file\n", millis());
@@ -405,7 +416,15 @@ bool Settings::loadFromFile() {
     inputFile.read(reinterpret_cast<uint8_t*>(readerFont), sizeof(readerFont));
     readerFont[sizeof(readerFont) - 1] = '\0';
     if (++settingsRead >= fileSettingsCount) break;
+    inputFile.read(reinterpret_cast<uint8_t*>(wifiSsid), sizeof(wifiSsid));
+    wifiSsid[sizeof(wifiSsid) - 1] = '\0';
+    if (++settingsRead >= fileSettingsCount) break;
+    inputFile.read(reinterpret_cast<uint8_t*>(wifiPassword), sizeof(wifiPassword));
+    wifiPassword[sizeof(wifiPassword) - 1] = '\0';
+    if (++settingsRead >= fileSettingsCount) break;
   } while (false);
+
+  // Migrate font size from version < 8
 
   // Migrate font size from version < 8 (enum values shifted +1 for FontXSmall)
   // Old: FontSmall=0, FontMedium=1, FontLarge=2

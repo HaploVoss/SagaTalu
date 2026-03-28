@@ -19,6 +19,7 @@ enum class SettingsScreen : uint8_t {
   HomeArt,
   BleTransfer,  // Wireless file transfer (BLE Legacy)
   WifiTransfer, // Wireless file transfer (WiFi)
+  WifiSetup,    // WiFi network configuration
   Reader,
   Device,
   Cleanup,
@@ -114,6 +115,35 @@ class SettingsState : public State {
   void enterWifiTransfer();
   void renderWifiTransfer();
   void exitWifiTransfer();
+
+  // WiFi Setup
+  void enterWifiSetup();
+  void updateWifiSetup();
+  void renderWifiSetup();
+  void exitWifiSetup();
+
+  // WiFi setup state
+  enum class WifiSetupScreen : uint8_t {
+    Scanning,
+    NetworkList,
+    PasswordEntry,
+    Connecting,
+    Connected,
+    Failed,
+  };
+  WifiSetupScreen wifiSetupScreen_ = WifiSetupScreen::Scanning;
+  static constexpr int MAX_WIFI_NETWORKS = 10;
+  struct WifiNetwork {
+    char ssid[33];
+    int32_t rssi;
+    bool encrypted;
+  };
+  WifiNetwork wifiNetworks_[MAX_WIFI_NETWORKS];
+  int wifiNetworkCount_ = 0;
+  int wifiNetworkSelected_ = 0;
+  char wifiPasswordBuf_[64] = {0};
+  int wifiPasswordLen_ = 0;
+  bool wifiSetupNeedsRender_ = false;
 
 #if FEATURE_BLUETOOTH
   // Bluetooth screen state

@@ -148,13 +148,35 @@ StateTransition SettingsState::update(Core& core) {
                 }
                 break;
 #endif
+              case SettingsScreen::WifiSetup:
+                if (wifiSetupScreen_ == WifiSetupScreen::NetworkList) {
+                  if (wifiNetworkSelected_ > 0) wifiNetworkSelected_--;
+                  wifiSetupNeedsRender_ = true;
+                } else if (wifiSetupScreen_ == WifiSetupScreen::PasswordEntry) {
+                  if (wifiPasswordLen_ > 0) {
+                    char& c = wifiPasswordBuf_[wifiPasswordLen_ - 1];
+                    if (c >= 'a' && c < 'z') c++;
+                    else if (c == 'z') c = 'A';
+                    else if (c >= 'A' && c < 'Z') c++;
+                    else if (c == 'Z') c = '0';
+                    else if (c >= '0' && c < '9') c++;
+                    else if (c == '9') c = '!';
+                    else if (c == '!') c = '@';
+                    else if (c == '@') c = '#';
+                    else if (c == '#') c = '_';
+                    else if (c == '_') c = '-';
+                    else if (c == '-') c = '.';
+                    else c = 'a';
+                    wifiSetupNeedsRender_ = true;
+                  }
+                }
+                break;
               default:
                 break;
             }
             needsRender_ = true;
             break;
-
-          case Button::Down:
+            case Button::Down:
             switch (currentScreen_) {
               case SettingsScreen::Menu:
                 menuView_.moveDown();
@@ -187,12 +209,34 @@ StateTransition SettingsState::update(Core& core) {
                 }
                 break;
 #endif
+              case SettingsScreen::WifiSetup:
+                if (wifiSetupScreen_ == WifiSetupScreen::NetworkList) {
+                  if (wifiNetworkSelected_ < wifiNetworkCount_ - 1) wifiNetworkSelected_++;
+                  wifiSetupNeedsRender_ = true;
+                } else if (wifiSetupScreen_ == WifiSetupScreen::PasswordEntry) {
+                  if (wifiPasswordLen_ > 0) {
+                    char& c = wifiPasswordBuf_[wifiPasswordLen_ - 1];
+                    if (c > 'a' && c <= 'z') c--;
+                    else if (c == 'a') c = '.';
+                    else if (c == '.') c = '-';
+                    else if (c == '-') c = '_';
+                    else if (c == '_') c = '#';
+                    else if (c == '#') c = '@';
+                    else if (c == '@') c = '!';
+                    else if (c == '!') c = '9';
+                    else if (c > '0' && c <= '9') c--;
+                    else if (c == '0') c = 'Z';
+                    else if (c > 'A' && c <= 'Z') c--;
+                    else c = 'z';
+                    wifiSetupNeedsRender_ = true;
+                  }
+                }
+                break;
               default:
                 break;
             }
             needsRender_ = true;
             break;
-
           case Button::Left:
             switch (currentScreen_) {
               case SettingsScreen::Menu:
@@ -224,12 +268,21 @@ StateTransition SettingsState::update(Core& core) {
                 }
                 break;
 #endif
+              case SettingsScreen::WifiSetup:
+                if (wifiSetupScreen_ == WifiSetupScreen::PasswordEntry) {
+                  if (wifiPasswordLen_ > 0) {
+                    wifiPasswordBuf_[--wifiPasswordLen_] = '\0';
+                    wifiSetupNeedsRender_ = true;
+                  }
+                } else {
+                  goBack(core);
+                }
+                break;
               default:
                 goBack(core);
                 break;
             }
             break;
-
           case Button::Right:
             switch (currentScreen_) {
               case SettingsScreen::HomeArt:
@@ -251,11 +304,19 @@ StateTransition SettingsState::update(Core& core) {
                 }
                 break;
 #endif
+              case SettingsScreen::WifiSetup:
+                if (wifiSetupScreen_ == WifiSetupScreen::PasswordEntry) {
+                  if (wifiPasswordLen_ < 63) {
+                    wifiPasswordBuf_[wifiPasswordLen_++] = 'a';
+                    wifiPasswordBuf_[wifiPasswordLen_] = '\0';
+                    wifiSetupNeedsRender_ = true;
+                  }
+                }
+                break;
               default:
                 break;
             }
             break;
-
           case Button::Center:
             handleConfirm(core);
             break;
@@ -301,7 +362,12 @@ StateTransition SettingsState::update(Core& core) {
     return StateTransition::to(StateId::PluginHost);
   }
 #endif
-
+if (currentScreen_ == SettingsScreen::WifiSetup) {
+    updateWifiSetup();
+    if (currentScreen_ != SettingsScreen::WifiSetup) {
+      return StateTransition::stay(StateId::Settings);
+    }
+  }
   if (goHome_) {
     goHome_ = false;
     return StateTransition::to(StateId::Home);
@@ -328,6 +394,9 @@ void SettingsState::render(Core& core) {
       case SettingsScreen::WifiTransfer:
         if (wifiTransfer_) wifiTransfer_->handleClient();
         viewNeedsRender = (wifiTransferLastRender_ == 0);
+        break;
+      case SettingsScreen::WifiSetup:
+        viewNeedsRender = wifiSetupNeedsRender_;
         break;
       case SettingsScreen::Reader:
         viewNeedsRender = readerView_.needsRender;
@@ -375,6 +444,12 @@ void SettingsState::render(Core& core) {
     case SettingsScreen::WifiTransfer:
       if (wifiTransferLastRender_ == 0) renderWifiTransfer();
       break;  
+    case SettingsScreen::WifiSetup:
+      if (wifiSetupNeedsRender_) {
+        renderWifiSetup();
+        wifiSetupNeedsRender_ = false;
+      }
+      break;
     case SettingsScreen::Reader:
       ui::render(renderer_, THEME, readerView_);
       readerView_.needsRender = false;
@@ -433,35 +508,39 @@ void SettingsState::openSelected() {
       enterWifiTransfer();
       currentScreen_ = SettingsScreen::WifiTransfer;
       break;
-    case 2:  // Reader
+    case 2:  // WiFi Setup
+      enterWifiSetup();
+      currentScreen_ = SettingsScreen::WifiSetup;
+      break;
+    case 3:  // Reader
       loadReaderSettings();
       readerView_.selected = 0;
       readerView_.needsRender = true;
       currentScreen_ = SettingsScreen::Reader;
       break;
-    case 3:  // Device
+    case 4:  // Device
       loadDeviceSettings();
       deviceView_.selected = 0;
       deviceView_.needsRender = true;
       currentScreen_ = SettingsScreen::Device;
       break;
 #if FEATURE_BLUETOOTH
-    case 4:  // Bluetooth
+    case 5:  // Bluetooth
       enterBluetooth();
       currentScreen_ = SettingsScreen::Bluetooth;
       break;
-    case 5:  // Cleanup
+    case 6:  // Cleanup
 #else
-    case 4:  // Cleanup
+    case 5:  // Cleanup
 #endif
       cleanupView_.selected = 0;
       cleanupView_.needsRender = true;
       currentScreen_ = SettingsScreen::Cleanup;
       break;
 #if FEATURE_BLUETOOTH
-    case 6:  // System Info
+    case 7:  // System Info
 #else
-    case 5:  // System Info
+    case 6:  // System Info
 #endif
       populateSystemInfo();
       infoView_.needsRender = true;
@@ -507,6 +586,11 @@ void SettingsState::goBack(Core& core) {
 #endif
     case SettingsScreen::WifiTransfer:
       exitWifiTransfer();
+      currentScreen_ = SettingsScreen::Menu;
+      menuView_.needsRender = true;
+      break;
+    case SettingsScreen::WifiSetup:
+      exitWifiSetup();
       currentScreen_ = SettingsScreen::Menu;
       menuView_.needsRender = true;
       break;
@@ -565,6 +649,24 @@ void SettingsState::handleConfirm(Core& core) {
     
     case SettingsScreen::WifiTransfer:
       // OK does nothing on WiFi transfer screen — just wait for files
+      break;
+    case SettingsScreen::WifiSetup:
+      if (wifiSetupScreen_ == WifiSetupScreen::NetworkList && wifiNetworkCount_ > 0) {
+        wifiPasswordLen_ = 0;
+        wifiPasswordBuf_[0] = '\0';
+        if (wifiNetworks_[wifiNetworkSelected_].encrypted) {
+          wifiPasswordBuf_[0] = 'a';
+          wifiPasswordLen_ = 1;
+          wifiPasswordBuf_[1] = '\0';
+          wifiSetupScreen_ = WifiSetupScreen::PasswordEntry;
+        } else {
+          wifiSetupScreen_ = WifiSetupScreen::Connecting;
+        }
+        wifiSetupNeedsRender_ = true;
+      } else if (wifiSetupScreen_ == WifiSetupScreen::PasswordEntry) {
+        wifiSetupScreen_ = WifiSetupScreen::Connecting;
+        wifiSetupNeedsRender_ = true;
+      }
       break;
 
     case SettingsScreen::BleTransfer:
@@ -1821,7 +1923,9 @@ void SettingsState::enterWifiTransfer() {
 
   Serial.printf("[WIFI] Free heap before WiFi start: %u\n", ESP.getFreeHeap());
   wifiTransfer_ = new WifiTransfer();
-  wifiTransfer_->begin("FiberLite", "Monteboy1701");
+  const char* ssid = core_->settings.wifiSsid;
+  const char* pass = core_->settings.wifiPassword;
+  wifiTransfer_->begin(ssid, pass);
   wifiTransferLastRender_ = 0;
   needsRender_ = true;
 }
@@ -1913,6 +2017,315 @@ void SettingsState::exitWifiTransfer() {
 
   renderer_.clearScreen(THEME.backgroundColor);
   renderer_.displayBuffer(EInkDisplay::FULL_REFRESH);
+}
+
+void SettingsState::enterWifiSetup() {
+  Serial.println("[WIFI] Entering WiFi setup");
+  wifiSetupScreen_ = WifiSetupScreen::Scanning;
+  wifiNetworkCount_ = 0;
+  wifiNetworkSelected_ = 0;
+  wifiPasswordLen_ = 0;
+  wifiPasswordBuf_[0] = '\0';
+  wifiSetupNeedsRender_ = true;
+  #if FEATURE_BLUETOOTH
+  // Free radio for WiFi use
+  if (ble::isReady()) {
+    ble::deinit();
+    Serial.println("[WIFI] BLE deinit for WiFi setup");
+  }
+#endif
+  sumi::MemoryArena::release();
+  delay(100);
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+  delay(100);
+  WiFi.scanNetworks(true);
+}
+
+void SettingsState::updateWifiSetup() {
+  if (wifiSetupScreen_ == WifiSetupScreen::Scanning) {
+    int n = WiFi.scanComplete();
+    if (n == WIFI_SCAN_RUNNING) return;
+    if (n < 0) {
+      wifiNetworkCount_ = 0;
+      wifiSetupScreen_ = WifiSetupScreen::NetworkList;
+    } else {
+      wifiNetworkCount_ = min(n, MAX_WIFI_NETWORKS);
+      for (int i = 0; i < wifiNetworkCount_; i++) {
+        strncpy(wifiNetworks_[i].ssid, WiFi.SSID(i).c_str(), 32);
+        wifiNetworks_[i].ssid[32] = '\0';
+        wifiNetworks_[i].rssi = WiFi.RSSI(i);
+        wifiNetworks_[i].encrypted = (WiFi.encryptionType(i) != WIFI_AUTH_OPEN);
+      }
+      WiFi.scanDelete();
+      wifiSetupScreen_ = WifiSetupScreen::NetworkList;
+    }
+    wifiSetupNeedsRender_ = true;
+  }
+
+  Event e;
+  while (core_->events.pop(e)) {
+    if (e.type != EventType::ButtonPress) continue;
+
+    if (wifiSetupScreen_ == WifiSetupScreen::NetworkList) {
+      switch (e.button) {
+        case Button::Up:
+          if (wifiNetworkSelected_ > 0) wifiNetworkSelected_--;
+          wifiSetupNeedsRender_ = true;
+          break;
+        case Button::Down:
+          if (wifiNetworkSelected_ < wifiNetworkCount_ - 1) wifiNetworkSelected_++;
+          wifiSetupNeedsRender_ = true;
+          break;
+        case Button::Center:
+          if (wifiNetworkCount_ > 0) {
+            wifiPasswordLen_ = 0;
+            wifiPasswordBuf_[0] = '\0';
+            if (wifiNetworks_[wifiNetworkSelected_].encrypted) {
+              wifiPasswordBuf_[0] = 'a';
+              wifiPasswordLen_ = 1;
+              wifiPasswordBuf_[1] = '\0';
+              wifiSetupScreen_ = WifiSetupScreen::PasswordEntry;
+            } else {
+              wifiSetupScreen_ = WifiSetupScreen::Connecting;
+            }
+            wifiSetupNeedsRender_ = true;
+          }
+          break;
+        case Button::Back:
+          exitWifiSetup();
+          currentScreen_ = SettingsScreen::Menu;
+          menuView_.needsRender = true;
+          needsRender_ = true;
+          return;
+        default: break;
+      }
+
+    } else if (wifiSetupScreen_ == WifiSetupScreen::PasswordEntry) {
+      switch (e.button) {
+        case Button::Up: {
+          if (wifiPasswordLen_ > 0) {
+            char& c = wifiPasswordBuf_[wifiPasswordLen_ - 1];
+            if (c >= 'a' && c < 'z') c++;
+            else if (c == 'z') c = 'A';
+            else if (c >= 'A' && c < 'Z') c++;
+            else if (c == 'Z') c = '0';
+            else if (c >= '0' && c < '9') c++;
+            else if (c == '9') c = '!';
+            else if (c == '!') c = '@';
+            else if (c == '@') c = '#';
+            else if (c == '#') c = '_';
+            else if (c == '_') c = '-';
+            else if (c == '-') c = '.';
+            else c = 'a';
+            wifiSetupNeedsRender_ = true;
+          }
+          break;
+        }
+        case Button::Down: {
+          if (wifiPasswordLen_ > 0) {
+            char& c = wifiPasswordBuf_[wifiPasswordLen_ - 1];
+            if (c > 'a' && c <= 'z') c--;
+            else if (c == 'a') c = '.';
+            else if (c == '.') c = '-';
+            else if (c == '-') c = '_';
+            else if (c == '_') c = '#';
+            else if (c == '#') c = '@';
+            else if (c == '@') c = '!';
+            else if (c == '!') c = '9';
+            else if (c > '0' && c <= '9') c--;
+            else if (c == '0') c = 'Z';
+            else if (c > 'A' && c <= 'Z') c--;
+            else c = 'z';
+            wifiSetupNeedsRender_ = true;
+          }
+          break;
+        }
+        case Button::Right:
+          if (wifiPasswordLen_ < 63) {
+            wifiPasswordBuf_[wifiPasswordLen_++] = 'a';
+            wifiPasswordBuf_[wifiPasswordLen_] = '\0';
+            wifiSetupNeedsRender_ = true;
+          }
+          break;
+        case Button::Left:
+          if (wifiPasswordLen_ > 0) {
+            wifiPasswordBuf_[--wifiPasswordLen_] = '\0';
+            wifiSetupNeedsRender_ = true;
+          }
+          break;
+        case Button::Center:
+          wifiSetupScreen_ = WifiSetupScreen::Connecting;
+          wifiSetupNeedsRender_ = true;
+          break;
+        case Button::Back:
+          wifiSetupScreen_ = WifiSetupScreen::NetworkList;
+          wifiSetupNeedsRender_ = true;
+          break;
+        default: break;
+      }
+
+    } else if (wifiSetupScreen_ == WifiSetupScreen::Connected ||
+               wifiSetupScreen_ == WifiSetupScreen::Failed) {
+      exitWifiSetup();
+      currentScreen_ = SettingsScreen::Menu;
+      menuView_.needsRender = true;
+      needsRender_ = true;
+      return;
+    }
+  }
+
+  if (wifiSetupScreen_ == WifiSetupScreen::Connecting) {
+    const char* ssid = wifiNetworks_[wifiNetworkSelected_].ssid;
+    const char* pass = wifiPasswordLen_ > 0 ? wifiPasswordBuf_ : "";
+    WiFi.begin(ssid, pass);
+    unsigned long start = millis();
+    while (WiFi.status() != WL_CONNECTED && millis() - start < 15000) {
+      delay(250);
+    }
+    if (WiFi.status() == WL_CONNECTED) {
+      strncpy(core_->settings.wifiSsid, ssid, sizeof(core_->settings.wifiSsid) - 1);
+      strncpy(core_->settings.wifiPassword, pass, sizeof(core_->settings.wifiPassword) - 1);
+      core_->settings.saveToFile();
+      Serial.printf("[WIFI] Saved credentials for: %s\n", ssid);
+      wifiSetupScreen_ = WifiSetupScreen::Connected;
+    } else {
+      wifiSetupScreen_ = WifiSetupScreen::Failed;
+    }
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_OFF);
+    wifiSetupNeedsRender_ = true;
+  }
+}
+
+void SettingsState::renderWifiSetup() {
+  renderer_.clearScreen(THEME.backgroundColor);
+  const Theme& t = THEME;
+  ui::title(renderer_, t, t.screenMarginTop, "WiFi Setup");
+
+  int y = 160;
+
+  switch (wifiSetupScreen_) {
+    case WifiSetupScreen::Scanning:
+      renderer_.drawCenteredText(t.readerFontIdMedium, y,
+        "Scanning for networks...", t.primaryTextBlack, EpdFontFamily::BOLD);
+      break;
+
+    case WifiSetupScreen::NetworkList:
+      if (wifiNetworkCount_ == 0) {
+        renderer_.drawCenteredText(t.readerFontIdMedium, y,
+          "No networks found", t.primaryTextBlack);
+        y += 56;
+        renderer_.drawCenteredText(t.menuFontId, y,
+          "Press Back to exit", t.secondaryTextBlack);
+      } else {
+        renderer_.drawCenteredText(t.menuFontId, y,
+          "Select a network:", t.secondaryTextBlack);
+        y += 48;
+        int itemH = 52;
+        for (int i = 0; i < wifiNetworkCount_ && y < 720; i++) {
+          bool sel = (i == wifiNetworkSelected_);
+          if (sel) {
+            renderer_.fillRect(20, y - 4,
+              renderer_.getScreenWidth() - 40, itemH - 4,
+              t.primaryTextBlack);
+          }
+          renderer_.drawCenteredText(t.menuFontId, y + 8,
+            wifiNetworks_[i].ssid,
+            sel ? !t.primaryTextBlack : t.primaryTextBlack);
+          char rssiStr[16];
+          snprintf(rssiStr, sizeof(rssiStr), "%s %ddBm",
+            wifiNetworks_[i].encrypted ? "[*]" : "   ",
+            wifiNetworks_[i].rssi);
+          renderer_.drawCenteredText(t.uiFontId, y + 28,
+            rssiStr,
+            sel ? !t.primaryTextBlack : t.secondaryTextBlack);
+          y += itemH;
+        }
+      }
+      break;
+
+    case WifiSetupScreen::PasswordEntry: {
+      renderer_.drawCenteredText(t.menuFontId, y,
+        wifiNetworks_[wifiNetworkSelected_].ssid,
+        t.primaryTextBlack, EpdFontFamily::BOLD);
+      y += 56;
+      renderer_.drawCenteredText(t.menuFontId, y,
+        "Enter password:", t.secondaryTextBlack);
+      y += 56;
+      int fw = 380, fh = 52;
+      int fx = (renderer_.getScreenWidth() - fw) / 2;
+      renderer_.drawRect(fx, y, fw, fh, t.primaryTextBlack);
+      renderer_.drawRect(fx+1, y+1, fw-2, fh-2, t.primaryTextBlack);
+      char display[66];
+      strncpy(display, wifiPasswordBuf_, 64);
+      display[64] = '\0';
+      display[wifiPasswordLen_] = '_';
+      display[wifiPasswordLen_ + 1] = '\0';
+      renderer_.drawCenteredText(t.menuFontId, y + 14, display, t.primaryTextBlack);
+      y += fh + 40;
+      renderer_.drawCenteredText(t.uiFontId, y,
+        "Up/Down: change char   Right: add   Left: delete",
+        t.secondaryTextBlack);
+      y += 32;
+      renderer_.drawCenteredText(t.uiFontId, y,
+        "OK: confirm   Back: cancel", t.secondaryTextBlack);
+      break;
+    }
+
+    case WifiSetupScreen::Connecting:
+      renderer_.drawCenteredText(t.readerFontIdMedium, y,
+        "Connecting...", t.primaryTextBlack, EpdFontFamily::BOLD);
+      y += 56;
+      renderer_.drawCenteredText(t.menuFontId, y,
+        wifiNetworks_[wifiNetworkSelected_].ssid, t.secondaryTextBlack);
+      break;
+
+    case WifiSetupScreen::Connected:
+      renderer_.drawCenteredText(t.readerFontIdMedium, y,
+        "Connected!", t.primaryTextBlack, EpdFontFamily::BOLD);
+      y += 56;
+      renderer_.drawCenteredText(t.menuFontId, y,
+        wifiNetworks_[wifiNetworkSelected_].ssid, t.secondaryTextBlack);
+      y += 48;
+      renderer_.drawCenteredText(t.menuFontId, y,
+        "Credentials saved.", t.secondaryTextBlack);
+      y += 48;
+      renderer_.drawCenteredText(t.uiFontId, y,
+        "Press any button to exit", t.secondaryTextBlack);
+      break;
+
+    case WifiSetupScreen::Failed:
+      renderer_.drawCenteredText(t.readerFontIdMedium, y,
+        "Connection failed", t.primaryTextBlack, EpdFontFamily::BOLD);
+      y += 56;
+      renderer_.drawCenteredText(t.menuFontId, y,
+        "Check password and try again", t.secondaryTextBlack);
+      y += 48;
+      renderer_.drawCenteredText(t.uiFontId, y,
+        "Press any button to exit", t.secondaryTextBlack);
+      break;
+  }
+
+  ui::ButtonBar buttons{"Back", "", "", ""};
+  ui::buttonBar(renderer_, t, buttons);
+  renderer_.displayBuffer(EInkDisplay::FAST_REFRESH);
+}
+
+void SettingsState::exitWifiSetup() {
+  Serial.println("[WIFI] Exiting WiFi setup");
+  WiFi.scanDelete();
+  WiFi.disconnect(true);
+  WiFi.mode(WIFI_OFF);
+  if (!sumi::MemoryArena::isInitialized()) {
+    sumi::MemoryArena::init();
+  }
+#if FEATURE_BLUETOOTH
+  if (!ble::isReady()) {
+    ble::init();
+    Serial.println("[WIFI] BLE re-initialized after WiFi setup");
+  }
+#endif
 }
 
 }  // namespace sumi
