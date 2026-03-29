@@ -1,5 +1,4 @@
 # SagaTalu
-
 **Focused firmware for the Xteink X4.**
 
 SagaTalu is custom firmware for the Xteink X4 e-ink device, forked from 
@@ -14,43 +13,43 @@ robust wireless file management.
 - **Notes-first** — Notes is the primary app, at the top of the main menu
 - **Games and Apps removed** — all plugin/games overhead stripped out, 
   freeing significant memory
-- **Notes overhauled** — proportional font rendering, accurate cursor 
-  positioning, system font consistency, and expanded Bluetooth keyboard 
-  device support
-- **Portrait orientation** — display now runs in portrait mode in Notes
+- **Notes overhauled** — proportional font rendering, portrait orientation, 
+  system font consistency, and expanded Bluetooth keyboard device support
 - **WiFi file management** — freed memory from removed apps allows full 
-  WiFi support. Access via `sagatalu.local` or IP address from any browser 
+  WiFi support. Access via `sumi.local` or IP address from any browser 
   on your network. Upload, download, and delete files anywhere on the SD 
   card (full root access, not just `/books`)
 - **Access Point fallback** — when home WiFi is unavailable, SagaTalu 
-  creates its own hotspot for direct connection
-- **Updated branding** — new transition logo and sleep screen
+  creates its own hotspot (`SUMI-Transfer`) for direct connection
+- **WiFi setup via device menu** — configure your home WiFi directly from 
+  Settings → WiFi Setup. Scans for networks, enter password with device 
+  buttons, saves credentials permanently
+- **E-ink refresh suppressed in Notes editor** — no more periodic screen 
+  flashes while typing. Clean refresh only on exit
+- **Updated branding** — Saga Talu compass star logo on boot and sleep screens, 
+  custom home screen background
 
 ---
 
 ## Flashing SagaTalu
 
-*Web flasher* [https://haplovoss.github.io/SagaTalu/]
+Use the web flasher (requires Chrome, Edge, or Opera):
 
-### Manual Flash
+**[https://haplovoss.github.io/SagaTalu/](https://haplovoss.github.io/SagaTalu/)**
 
-1. Download the latest `SagaTalu.bin` from [Releases](../../releases)
-2. Go to [https://web.esptool.io/](https://web.esptool.io/)
-3. Click **Connect** and select the USB serial port
-4. Set flash address to `0x0`
-5. Select the downloaded `.bin` file
-6. Click **Program**
+Connect your Xteink X4 via USB-C before clicking Install.
 
 ---
 
 ## First Boot
 
-1. SagaTalu creates a WiFi hotspot called `SagaTalu-Setup-XXXX`
-2. Connect to it from your phone or computer (no password)
-3. Open `http://192.168.4.1` in your browser
-4. Connect SagaTalu to your home WiFi
-5. Once connected, access the portal at `http://sagatalu.local` or the 
-   device's IP address from any device on the same network
+1. Go to **Settings → WiFi Setup**
+2. Select your home network from the scan list
+3. Enter your WiFi password using the device buttons
+4. On successful connection, credentials are saved automatically
+5. Go to **Settings → Wireless Transfer** to start the file server
+6. Access the file manager at `http://sumi.local` or the device IP from 
+   any browser on the same network
 
 ---
 
@@ -58,15 +57,16 @@ robust wireless file management.
 
 The web portal gives you full access to your SD card from any browser — 
 no USB cable or special software needed. Upload books, notes, or any other 
-files, browse folders, and delete files directly from the interface.
+files, browse folders, download, and delete files directly from the interface.
 
 ---
 
 ## SD Card Structure
+
 ```
 SD Card Root/
-├── config/      ← Themes / "Home Art" images
-├── images/      ← BMP/JPEG images
+├── config/
+│   └── themes/  ← Home Art BMP images and .theme files
 ├── notes/       ← Text notes
 └── books/       ← EPUB files
 ```
