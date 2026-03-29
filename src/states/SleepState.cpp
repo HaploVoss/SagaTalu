@@ -34,8 +34,15 @@ void SleepState::enter(Core& core) {
   Serial.println("[STATE] SleepState::enter - rendering sleep screen");
 
   // Show immediate feedback before rendering sleep screen
+  // renderer_.clearScreen(THEME.backgroundColor);
+  // renderer_.drawCenteredText(THEME.uiFontId, renderer_.getScreenHeight() / 2, "Sleeping...", THEME.primaryTextBlack);
+  // Show logo briefly as sleep transition
   renderer_.clearScreen(THEME.backgroundColor);
-  renderer_.drawCenteredText(THEME.uiFontId, renderer_.getScreenHeight() / 2, "Sleeping...", THEME.primaryTextBlack);
+  const auto pw = renderer_.getScreenWidth();
+  const auto ph = renderer_.getScreenHeight();
+  renderer_.drawImage(SumiLogo, (pw + 128) / 2, (ph - 128) / 2, 128, 128);
+  renderer_.displayBuffer(EInkDisplay::FAST_REFRESH);
+  delay(400);
   renderer_.displayBuffer(EInkDisplay::FAST_REFRESH);
 
   // Render the appropriate sleep screen based on settings
