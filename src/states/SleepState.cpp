@@ -40,7 +40,7 @@ void SleepState::enter(Core& core) {
   renderer_.clearScreen(THEME.backgroundColor);
   const auto pw = renderer_.getScreenWidth();
   const auto ph = renderer_.getScreenHeight();
-  renderer_.drawImage(SumiLogo, (pw + 128) / 2, (ph - 128) / 2, 128, 128);
+  renderer_.drawImage(SumiLogo, (pw + SUMI_LOGO_W) / 2, (ph - SUMI_LOGO_H) / 2, SUMI_LOGO_W, SUMI_LOGO_H);
   renderer_.displayBuffer(EInkDisplay::FAST_REFRESH);
   delay(400);
   renderer_.displayBuffer(EInkDisplay::FAST_REFRESH);
@@ -96,7 +96,7 @@ void SleepState::renderDefaultSleepScreen(const Core& core) const {
   const auto pageHeight = renderer_.getScreenHeight();
 
   renderer_.clearScreen(THEME.backgroundColor);
-  renderer_.drawImage(SumiLogo, (pageWidth + 128) / 2, (pageHeight - 128) / 2, 128, 128);
+  renderer_.drawImage(SumiLogo, (pageWidth + SUMI_LOGO_W) / 2, (pageHeight - SUMI_LOGO_H) / 2, SUMI_LOGO_W, SUMI_LOGO_H);
   renderer_.drawCenteredText(THEME.uiFontId, pageHeight / 2 + 70, "SUMI", THEME.primaryTextBlack, BOLD);
   renderer_.drawCenteredText(THEME.smallFontId, pageHeight / 2 + 110, "SLEEPING", THEME.primaryTextBlack);
   renderer_.drawCenteredText(THEME.smallFontId, pageHeight - 30, SUMI_VERSION, THEME.primaryTextBlack);
