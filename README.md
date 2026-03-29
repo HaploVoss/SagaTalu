@@ -30,7 +30,7 @@ robust wireless file management.
 
 ## Flashing SagaTalu
 
-*(Web flasher coming soon)*
+*Web flasher* [https://haplovoss.github.io/SagaTalu/]
 
 ### Manual Flash
 

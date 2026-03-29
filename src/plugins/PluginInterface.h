@@ -74,6 +74,9 @@ class PluginInterface {
 
   // Self-refresh — override to return true if plugin calls displayBuffer() itself
   virtual bool handlesOwnRefresh() const { return false; }
+  // Suppress periodic full refresh — override to return true when full refresh would be disruptive
+  // e.g. Notes returns true while in editor mode to prevent refresh mid-typing
+  virtual bool suppressPeriodicRefresh() const { return false; }
 
   bool needsFullRedraw = true;
 

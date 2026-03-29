@@ -28,6 +28,9 @@ public:
   const char* name() const override { return "Notes"; }
   PluginRunMode runMode() const override { return PluginRunMode::WithUpdate; }
   bool wantsLandscape() const override { return false; }
+  bool suppressPeriodicRefresh() const override {
+    return screen_ == SCREEN_EDITOR;
+  }
 
   static constexpr int MAX_NOTES = 20;
   static constexpr int MAX_NAME_LEN = 32;
@@ -583,8 +586,8 @@ bool NotesApp::update() {
     if (millis() - lastKeystroke_ > AUTO_SAVE_MS) {
       saveNote();
       lastKeystroke_ = 0;
-      needsFullRedraw = true;
-      return true;
+      // Don't force a full redraw on auto-save — screen hasn't changed
+      return false;
     }
   }
   return false;

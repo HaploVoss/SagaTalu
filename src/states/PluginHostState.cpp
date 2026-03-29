@@ -164,6 +164,9 @@ void PluginHostState::enter(Core& core) {
 }
 
 void PluginHostState::exit(Core& core) {
+  // Restore periodic refresh interval in case plugin suppressed it
+  renderer_.setPeriodicRefreshInterval(core.settings.getPagesPerRefreshValue());
+
   if (plugin_) {
     plugin_->cleanup();
     delete plugin_;
@@ -446,18 +449,24 @@ void PluginHostState::render(Core& core) {
   }
 
   // Periodic full refresh to clear e-ink ghosting
-  partialCount_++;
-  if (partialCount_ >= 30) {
-    renderer_.displayBuffer(EInkDisplay::FULL_REFRESH);
+  // Suppressed when plugin requests it (e.g. Notes editor mid-typing)
+  if (plugin_->suppressPeriodicRefresh()) {
+    renderer_.setPeriodicRefreshInterval(0);
+    renderer_.displayBuffer(EInkDisplay::FAST_REFRESH);
     partialCount_ = 0;
   } else {
-    renderer_.displayBuffer(EInkDisplay::FAST_REFRESH);
+    renderer_.setPeriodicRefreshInterval(sumi::core.settings.getPagesPerRefreshValue());
+    partialCount_++;
+    if (partialCount_ >= 30) {
+      renderer_.displayBuffer(EInkDisplay::FULL_REFRESH);
+      partialCount_ = 0;
+    } else {
+      renderer_.displayBuffer(EInkDisplay::FAST_REFRESH);
+    }
   }
-
   needsRender_ = false;
   core.display.markDirty();
 }
 
 }  // namespace sumi
-
 #endif
