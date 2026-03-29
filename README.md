@@ -16,11 +16,11 @@ robust wireless file management.
 - **Notes overhauled** — proportional font rendering, portrait orientation, 
   system font consistency, and expanded Bluetooth keyboard device support
 - **WiFi file management** — freed memory from removed apps allows full 
-  WiFi support. Access via `sumi.local` or IP address from any browser 
+  WiFi support. Access via `sagatalu.local` or IP address from any browser 
   on your network. Upload, download, and delete files anywhere on the SD 
   card (full root access, not just `/books`)
 - **Access Point fallback** — when home WiFi is unavailable, SagaTalu 
-  creates its own hotspot (`SUMI-Transfer`) for direct connection
+  creates its own hotspot (`SagaTalu-Transfer`) for direct connection
 - **WiFi setup via device menu** — configure your home WiFi directly from 
   Settings → WiFi Setup. Scans for networks, enter password with device 
   buttons, saves credentials permanently
@@ -48,7 +48,7 @@ Connect your Xteink X4 via USB-C before clicking Install.
 3. Enter your WiFi password using the device buttons
 4. On successful connection, credentials are saved automatically
 5. Go to **Settings → Wireless Transfer** to start the file server
-6. Access the file manager at `http://sumi.local` or the device IP from 
+6. Access the file manager at `http://sagatalu.local` or the device IP from 
    any browser on the same network
 
 ---

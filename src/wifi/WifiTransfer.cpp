@@ -188,7 +188,7 @@ bool WifiTransfer::begin(const char* ssid, const char* password) {
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("[WIFI] Starting AP: SagaTalu-Transfer");
     WiFi.mode(WIFI_AP);
-    WiFi.softAP("SUMI-Transfer", "sagatalupass");
+    WiFi.softAP("SagaTalu-Transfer", "sagatalupass");
     ip_ = WiFi.softAPIP().toString();
     apMode_ = true;
     Serial.printf("[WIFI] AP started. IP: %s\n", ip_.c_str());
