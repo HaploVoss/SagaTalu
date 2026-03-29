@@ -666,7 +666,7 @@ void NotesApp::drawFileList() {
   // Bottom hint
   d_.setCursor(marginX_, H_ - 20);
   #if FEATURE_BLUETOOTH
-  d_.print("OK: Open    Back: Exit    Down: Scan KB");
+  d_.print("Back: Exit      OK: Open");
   #else
   d_.print("OK: Open    Back: Exit");
   #endif
@@ -757,14 +757,14 @@ void NotesApp::drawEditor() {
 void NotesApp::drawNewNote() {
   drawStatusBar("New Note", "");
 
-  int centerY = H_ / 2;
+  int centerY = H_ / 3;
 
-  d_.setCursor(marginX_, centerY - 40);
+  d_.setCursor(marginX_, centerY);
   d_.print("Note name:");
 
   int fieldX = marginX_;
-  int fieldY = centerY - 10;
-  int fieldW = W_ / 2;
+  int fieldY = centerY + lineH_ + 8;
+  int fieldW = W_ - marginX_ * 2;
   int fieldH = lineH_ + 8;
   d_.drawRect(fieldX, fieldY, fieldW, fieldH, GxEPD_BLACK);
 
@@ -775,8 +775,10 @@ void NotesApp::drawNewNote() {
   int curX = fieldX + 6 + newNameLen_ * charW_;
   d_.fillRect(curX, fieldY + 4, 2, fieldH - 8, GxEPD_BLACK);
 
-  d_.setCursor(marginX_, centerY + 40);
-  d_.print("Type name or use Up/Down/L/R    OK: Create    Back: Cancel");
+  d_.setCursor(marginX_, fieldY + fieldH + lineH_ + 8);
+  d_.print("Up/Dwn: char   L/R: +/-");
+  d_.setCursor(marginX_, fieldY + fieldH + lineH_ * 2 + 12);
+  d_.print("Back: Cancel   OK: Create");
 }
 
 }  // namespace sumi

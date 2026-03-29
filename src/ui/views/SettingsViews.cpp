@@ -62,9 +62,6 @@ const DeviceSettingsView::SettingDef DeviceSettingsView::DEFS[SETTING_COUNT] = {
     {"Startup Behavior", STARTUP_VALUES, 2},         {"Short Power Button", SHORT_PWR_VALUES, 4},
     {"Pages Per Refresh", PAGES_REFRESH_VALUES, 6},  {"Sunlight Fading Fix", TOGGLE_VALUES, 2},
     {"Front Buttons", FRONT_BUTTON_VALUES, 2},       {"Side Buttons", SIDE_BUTTON_VALUES, 2},
-#if FEATURE_PLUGINS
-    {"App Visibility", nullptr, 0},  // Sub-menu action: opens AppVisibility screen
-#endif
 };
 
 // Render functions

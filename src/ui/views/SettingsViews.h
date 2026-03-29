@@ -424,11 +424,7 @@ struct DeviceSettingsView {
     uint8_t valueCount;  // 0 = sub-menu action (no cycling)
   };
 
-#if FEATURE_PLUGINS
-  static constexpr int SETTING_COUNT = 9;
-#else
   static constexpr int SETTING_COUNT = 8;
-#endif
   static const SettingDef DEFS[SETTING_COUNT];
 
   ButtonBar buttons{"Back", "", "<", ">"};
