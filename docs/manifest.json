@@ -8,10 +8,10 @@
     {
       "chipFamily": "ESP32-C3",
       "parts": [
-        {
-          "path": "firmware/sagatalu-v1.0.0-full.bin",
-          "offset": 0
-        }
+        { "path": "firmware/bootloader.bin", "offset": 0 },
+        { "path": "firmware/partitions.bin", "offset": 32768 },
+        { "path": "firmware/boot_app0.bin",  "offset": 57344 },
+        { "path": "firmware/sagatalu-v1.0.0.bin", "offset": 65536 }
       ]
     }
   ]
