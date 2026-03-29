@@ -1,0 +1,18 @@
+{
+  "name": "SagaTalu",
+  "version": "1.0.0",
+  "home_assistant_domain": null,
+  "funding_url": null,
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32-C3",
+      "parts": [
+        {
+          "path": "https://github.com/HaploVoss/SagaTalu/releases/download/v1.0.0/SagaTalu-v1.0.0.bin",
+          "offset": 0
+        }
+      ]
+    }
+  ]
+}
