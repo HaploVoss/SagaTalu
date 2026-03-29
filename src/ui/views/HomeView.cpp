@@ -18,10 +18,10 @@ void render(const GfxRenderer& r, const Theme& t, const HomeView& v) {
   const int pageHeight = r.getScreenHeight();
 
   // "SagaTalu" brand - small bold, top-left with padding from screen edge
-  r.drawText(t.uiFontId, 10, 8, "SagaTalu", t.primaryTextBlack, EpdFontFamily::BOLD);
+  r.drawText(t.uiFontId, 8, 5, "Saga Talu", t.primaryTextBlack, EpdFontFamily::BOLD);
 
   // Battery indicator - top right
-  battery(r, t, pageWidth - 80, 10, v.batteryPercent);
+  battery(r, t, pageWidth - 90, 15, v.batteryPercent);
 
   // Book card dimensions (matched to art template)
   const auto card = CardDimensions::calculate(pageWidth, pageHeight);

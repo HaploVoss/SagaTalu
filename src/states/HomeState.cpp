@@ -19,7 +19,7 @@
 #include "FontManager.h"
 #include "MappedInputManager.h"
 #include "ThemeManager.h"
-#include "../assets/sumi_home_bg.h"
+#include "../assets/sagatalu_home_bg.h"
 
 namespace sumi {
 
@@ -309,7 +309,7 @@ void HomeState::drawBackground(Core& core) {
     uint8_t* fb = renderer_.getFrameBuffer();
     if (fb) {
       // Copy sumi-e art directly into framebuffer (native orientation, zero overhead)
-      memcpy_P(fb, SumiHomeBg, SUMI_HOME_BG_SIZE);
+      memcpy_P(fb, SagaTaluHomeBg, SUMI_HOME_BG_SIZE);
     }
   } else {
     // Load theme from SD card
@@ -327,7 +327,7 @@ void HomeState::drawBackgroundFromSD(const char* themeName) {
     // Fall back to default PROGMEM art
     uint8_t* fb = renderer_.getFrameBuffer();
     if (fb) {
-      memcpy_P(fb, SumiHomeBg, SUMI_HOME_BG_SIZE);
+      memcpy_P(fb, SagaTaluHomeBg, SUMI_HOME_BG_SIZE);
     }
     return;
   }
@@ -339,7 +339,7 @@ void HomeState::drawBackgroundFromSD(const char* themeName) {
     file.close();
     uint8_t* fb = renderer_.getFrameBuffer();
     if (fb) {
-      memcpy_P(fb, SumiHomeBg, SUMI_HOME_BG_SIZE);
+      memcpy_P(fb, SagaTaluHomeBg, SUMI_HOME_BG_SIZE);
     }
     return;
   }
@@ -368,7 +368,7 @@ void HomeState::drawBackgroundFromSD(const char* themeName) {
     file.close();
     uint8_t* fb = renderer_.getFrameBuffer();
     if (fb) {
-      memcpy_P(fb, SumiHomeBg, SUMI_HOME_BG_SIZE);
+      memcpy_P(fb, SagaTaluHomeBg, SUMI_HOME_BG_SIZE);
     }
     return;
   }

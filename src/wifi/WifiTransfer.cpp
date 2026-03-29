@@ -1,5 +1,5 @@
 #include "WifiTransfer.h"
-#include "../assets/sumi_home_bg.h"
+#include "../assets/sagatalu_home_bg.h"
 
 static const char UPLOAD_HTML[] PROGMEM = R"rawhtml(
 <!DOCTYPE html>
@@ -451,7 +451,7 @@ void WifiTransfer::handleExportBg() {
       // Source byte in 800-wide landscape (100 bytes per row)
       int srcByte = srcY * 100 + srcX / 8;
       int srcBit = 7 - (srcX % 8);
-      uint8_t srcVal = pgm_read_byte(&SumiHomeBg[srcByte]);
+      uint8_t srcVal = pgm_read_byte(&SagaTaluHomeBg[srcByte]);
       uint8_t bit = (srcVal >> srcBit) & 1;
       // Write to dest row
       int dstBit = 7 - (px % 8);
