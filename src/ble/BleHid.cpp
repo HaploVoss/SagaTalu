@@ -598,7 +598,7 @@ namespace ble {
 void init() {
     if (_initialized) return;
     Serial.printf("[BLE] Init, free heap before: %lu\n", (unsigned long)ESP.getFreeHeap());
-    NimBLEDevice::init("SumiReader");
+    NimBLEDevice::init("SagaTalu");
     NimBLEDevice::setPower(9);  // Max power for best range
 
     // Use legacy pairing (SC=false) for broader keyboard compatibility.

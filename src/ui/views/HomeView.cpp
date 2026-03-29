@@ -8,7 +8,7 @@
 namespace ui {
 
 void render(const GfxRenderer& r, const Theme& t, const HomeView& v) {
-  // Art background: HomeState draws sumi-e art directly to framebuffer
+  // Art background: HomeState draws sagatalu-e art directly to framebuffer
   // No art: clear screen only if no cover (HomeState handles clear when cover present)
   if (!v.useArtBackground && !v.hasCoverBmp) {
     r.clearScreen(t.backgroundColor);
@@ -17,8 +17,8 @@ void render(const GfxRenderer& r, const Theme& t, const HomeView& v) {
   const int pageWidth = r.getScreenWidth();
   const int pageHeight = r.getScreenHeight();
 
-  // "SUMI" brand - small bold, top-left with padding from screen edge
-  r.drawText(t.uiFontId, 10, 8, "SUMI", t.primaryTextBlack, EpdFontFamily::BOLD);
+  // "SagaTalu" brand - small bold, top-left with padding from screen edge
+  r.drawText(t.uiFontId, 10, 8, "SagaTalu", t.primaryTextBlack, EpdFontFamily::BOLD);
 
   // Battery indicator - top right
   battery(r, t, pageWidth - 80, 10, v.batteryPercent);

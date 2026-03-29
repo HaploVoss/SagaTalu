@@ -6,7 +6,7 @@ static const char UPLOAD_HTML[] PROGMEM = R"rawhtml(
 <html>
 <head>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SUMI File Transfer</title>
+<title>Saga Talu File Transfer</title>
 <style>
   body{font-family:sans-serif;max-width:700px;margin:40px auto;padding:0 20px;background:#f5f5f5}
   h1{color:#333;font-size:1.4em;margin-bottom:4px}
@@ -38,7 +38,7 @@ static const char UPLOAD_HTML[] PROGMEM = R"rawhtml(
 </style>
 </head>
 <body>
-<h1>SUMI File Transfer</h1>
+<h1>Saga Talu File Transfer</h1>
 <div class="path" id="pathbar"></div>
 
 <div class="drop" id="drop" onclick="document.getElementById('fileinput').click()">
@@ -178,17 +178,17 @@ bool WifiTransfer::begin(const char* ssid, const char* password) {
       ip_ = WiFi.localIP().toString();
       apMode_ = false;
       Serial.printf("[WIFI] Connected. IP: %s\n", ip_.c_str());
-      if (MDNS.begin("sumi")) {
+      if (MDNS.begin("sagatalu")) {
         MDNS.addService("http", "tcp", 80);
-        Serial.println("[WIFI] mDNS started: http://sumi.local");
+        Serial.println("[WIFI] mDNS started: http://sagatalu.local");
       }
     }
   }
 
   if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("[WIFI] Starting AP: SUMI-Transfer");
+    Serial.println("[WIFI] Starting AP: SagaTalu-Transfer");
     WiFi.mode(WIFI_AP);
-    WiFi.softAP("SUMI-Transfer", "sumipass");
+    WiFi.softAP("SUMI-Transfer", "sagatalupass");
     ip_ = WiFi.softAPIP().toString();
     apMode_ = true;
     Serial.printf("[WIFI] AP started. IP: %s\n", ip_.c_str());

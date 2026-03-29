@@ -1709,7 +1709,7 @@ void SettingsState::renderBleTransfer() {
     
     renderer_.drawCenteredText(t.readerFontIdMedium, y, "Ready", t.primaryTextBlack, EpdFontFamily::BOLD);
     y += lgH + 4;
-    renderer_.drawCenteredText(t.menuFontId, y, "Visible as \"SUMI\"", t.secondaryTextBlack);
+    renderer_.drawCenteredText(t.menuFontId, y, "Visible as \"SagaTalu\"", t.secondaryTextBlack);
     y += mdH + 24;
     
     drawDivider(y);
@@ -1948,10 +1948,10 @@ void SettingsState::renderWifiTransfer() {
         "Connect to WiFi network:", t.primaryTextBlack, EpdFontFamily::BOLD);
       y += 56;
       renderer_.drawCenteredText(t.readerFontIdMedium, y,
-        "SUMI-Transfer", t.primaryTextBlack);
+        "SagaTalu-Transfer", t.primaryTextBlack);
       y += 48;
       renderer_.drawCenteredText(t.menuFontId, y,
-        "Password: sumipass", t.secondaryTextBlack);
+        "Password: sagatalupass", t.secondaryTextBlack);
       y += 72;
       renderer_.drawCenteredText(t.menuFontId, y,
         "Then open in browser:", t.secondaryTextBlack);
@@ -1975,7 +1975,7 @@ void SettingsState::renderWifiTransfer() {
         "or", t.secondaryTextBlack);
       y += 48;
       renderer_.drawCenteredText(t.readerFontIdMedium, y,
-        "http://sumi.local", t.primaryTextBlack, EpdFontFamily::BOLD);
+        "http://sagatalu.local", t.primaryTextBlack, EpdFontFamily::BOLD);
       y += 80;
       renderer_.drawCenteredText(t.menuFontId, y,
         "Drag and drop EPUB or TXT files", t.secondaryTextBlack);
