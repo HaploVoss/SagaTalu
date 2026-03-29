@@ -82,7 +82,8 @@ private:
   int lineH_ = 22;
   int charW_ = 10;
   int charsPerLine_ = 76;
-  int linesVisible_ = 18;
+  int linePixelW_ = 760;
+  int linesVisible_ = 18;    // pixel width of writable line area  int linesVisible_ = 18;
   int editTop_ = 36;
   int editBottom_ = 450;
 
@@ -153,7 +154,7 @@ void NotesApp::reset() {
 void NotesApp::init(int screenW, int screenH) {
   W_ = screenW;
   H_ = screenH;
-  // Use the regular reader font instead of the default small UI font
+  d_.setFontId(READER_FONT_ID_LARGE);
   computeLayout();
   scanNotes();
   screen_ = SCREEN_FILE_LIST;
@@ -170,14 +171,15 @@ void NotesApp::computeLayout() {
   statusBarH_ = lineH_ + 8;
   editTop_ = statusBarH_ + marginY_;
   editBottom_ = H_ - marginY_ - 4;
-  charsPerLine_ = (W_ - 2 * marginX_ - 8) / charW_;  // -8 for scroll indicator
+  linePixelW_ = W_ - 2 * marginX_ - 8;  // -8 for scroll indicator
+  charsPerLine_ = linePixelW_ / charW_;  // approximate, used for drawNewNote only
   linesVisible_ = (editBottom_ - editTop_) / lineH_;
 
   itemH_ = lineH_ + 14;
   itemsPerPage_ = (H_ - statusBarH_ - 40) / itemH_;
 
-  Serial.printf("[NOTES] Layout: charW=%d lineH=%d cpl=%d linesVis=%d\n",
-                charW_, lineH_, charsPerLine_, linesVisible_);
+  Serial.printf("[NOTES] Layout: charW=%d lineH=%d linePixelW=%d linesVis=%d\n",
+                charW_, lineH_, linePixelW_, linesVisible_);
 }
 
 void NotesApp::cleanup() {
@@ -226,11 +228,13 @@ int NotesApp::countWords() const {
 int NotesApp::countLines() const {
   if (bufLen_ == 0) return 1;
   int lines = 1;
-  int col = 0;
+  int px = 0;
   for (int i = 0; i < bufLen_; i++) {
-    if (buf_[i] == '\n') { lines++; col = 0; continue; }
-    col++;
-    if (col >= charsPerLine_) { lines++; col = 0; }
+    if (buf_[i] == '\n') { lines++; px = 0; continue; }
+    char tmp[2] = { buf_[i], '\0' };
+    int cw = (buf_[i] == ' ') ? d_.gfx().getSpaceWidth(d_.fontId()) : d_.getTextWidth(tmp);
+    px += cw;
+    if (px >= linePixelW_) { lines++; px = 0; }
   }
   return lines;
 }
@@ -291,39 +295,56 @@ void NotesApp::moveCursorDown() {
 }
 
 int NotesApp::cursorToLine() const {
-  int line = 0, col = 0;
+  int line = 0, px = 0;
   for (int i = 0; i < cursorPos_ && i < bufLen_; i++) {
-    if (buf_[i] == '\n') { line++; col = 0; continue; }
-    col++;
-    if (col >= charsPerLine_) { line++; col = 0; }
+    if (buf_[i] == '\n') { line++; px = 0; continue; }
+    char tmp[2] = { buf_[i], '\0' };
+    int cw = (buf_[i] == ' ') ? d_.gfx().getSpaceWidth(d_.fontId()) : d_.getTextWidth(tmp);
+    px += cw;
+    if (px >= linePixelW_) { line++; px = 0; }
   }
   return line;
 }
 
 int NotesApp::cursorToCol() const {
-  int col = 0;
-  for (int i = cursorPos_ - 1; i >= 0; i--) {
-    if (buf_[i] == '\n') break;
-    col++;
-    if (col >= charsPerLine_) break;
+  // Returns pixel offset of cursor within its visual line
+  int px = 0;
+  // Walk back to find start of this visual line
+  int lineStart = cursorPos_;
+  int linePx = 0;
+  // Re-walk from buffer start to find px at cursorPos_
+  int p = 0, runPx = 0;
+  while (p < cursorPos_ && p < bufLen_) {
+    if (buf_[p] == '\n') { runPx = 0; p++; continue; }
+    char tmp[2] = { buf_[p], '\0' };
+    int cw = (buf_[p] == ' ') ? d_.gfx().getSpaceWidth(d_.fontId()) : d_.getTextWidth(tmp);
+    runPx += cw;
+    if (runPx + cw >= linePixelW_) { runPx = 0; }
+    p++;
   }
-  return col;
+  return runPx;  // pixel offset of cursor within its visual line
 }
 
 int NotesApp::lineColToPos(int targetLine, int targetCol) const {
-  int line = 0, col = 0, pos = 0;
+  // targetCol is pixel offset; advance to nearest character >= that offset
+  int line = 0, px = 0, pos = 0;
   while (pos < bufLen_ && line < targetLine) {
-    if (buf_[pos] == '\n') { line++; col = 0; pos++; continue; }
-    col++;
+    if (buf_[pos] == '\n') { line++; px = 0; pos++; continue; }
+    char tmp[2] = { buf_[pos], '\0' };
+    px += d_.getTextWidth(tmp);
     pos++;
-    if (col >= charsPerLine_) { line++; col = 0; }
+    if (px >= linePixelW_) { line++; px = 0; }
   }
-  // Advance to targetCol within this line
-  while (pos < bufLen_ && col < targetCol) {
+  // Advance to targetCol (pixel offset) within this line
+  px = 0;
+  while (pos < bufLen_) {
     if (buf_[pos] == '\n') break;
-    col++;
+    char tmp[2] = { buf_[pos], '\0' };
+    int cw = (buf_[pos] == ' ') ? d_.gfx().getSpaceWidth(d_.fontId()) : d_.getTextWidth(tmp);
+    if (px + cw >= linePixelW_) break;
+    if (px >= targetCol) break;
+    px += cw;
     pos++;
-    if (col >= charsPerLine_) break;
   }
   return pos;
 }
@@ -589,6 +610,7 @@ void NotesApp::drawStatusBar(const char* left, const char* right) {
 
 void NotesApp::draw() {
   d_.fillScreen(GxEPD_WHITE);
+  d_.setFontId(READER_FONT_ID_LARGE);
 
   switch (screen_) {
     case SCREEN_FILE_LIST: drawFileList(); break;
@@ -666,16 +688,17 @@ void NotesApp::drawEditor() {
   drawStatusBar(titleBuf, rightStatus);
 
   // Draw text
+  // Draw text
   int x = marginX_;
   int y = editTop_;
   int line = 0;
-  int col = 0;
+  int px = 0;
   int cursorScreenX = -1, cursorScreenY = -1;
 
   for (int i = 0; i <= bufLen_; i++) {
     if (i == cursorPos_) {
       if (line >= viewScrollLine_ && line < viewScrollLine_ + linesVisible_) {
-        cursorScreenX = x + col * charW_;
+        cursorScreenX = x + px;
         cursorScreenY = y + (line - viewScrollLine_) * lineH_;
       }
     }
@@ -685,13 +708,21 @@ void NotesApp::drawEditor() {
 
     if (c == '\n') {
       line++;
-      col = 0;
+      px = 0;
       continue;
+    }
+
+    char tmp[2] = { c, '\0' };
+    int cw = (c == ' ') ? d_.gfx().getSpaceWidth(d_.fontId()) : d_.getTextWidth(tmp);
+
+    if (px + cw >= linePixelW_) {
+      line++;
+      px = 0;
     }
 
     if (line >= viewScrollLine_ && line < viewScrollLine_ + linesVisible_) {
       int screenY = y + (line - viewScrollLine_) * lineH_;
-      int screenX = x + col * charW_;
+      int screenX = x + px;
 
       if (screenY < editBottom_) {
         d_.setCursor(screenX, screenY + lineH_ - 4);
@@ -699,11 +730,7 @@ void NotesApp::drawEditor() {
       }
     }
 
-    col++;
-    if (col >= charsPerLine_) {
-      line++;
-      col = 0;
-    }
+    px += cw;
   }
 
   // Cursor: thin vertical bar
