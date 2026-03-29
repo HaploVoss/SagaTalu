@@ -65,9 +65,10 @@ files, browse folders, and delete files directly from the interface.
 ## SD Card Structure
 ```
 SD Card Root/
-├── books/       ← EPUB files
-├── notes/       ← Text notes
+├── config/      ← Themes / "Home Art" images
 ├── images/      ← BMP/JPEG images
+├── notes/       ← Text notes
+└── books/       ← EPUB files
 ```
 
 ---
