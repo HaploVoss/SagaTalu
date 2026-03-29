@@ -9,7 +9,7 @@
       "chipFamily": "ESP32-C3",
       "parts": [
         {
-          "path": "https://github.com/HaploVoss/SagaTalu/releases/download/v1.0.0/SagaTalu-v1.0.0.bin",
+          "path": "firmware/sagatalu-v1.0.0-full.bin",
           "offset": 0
         }
       ]
