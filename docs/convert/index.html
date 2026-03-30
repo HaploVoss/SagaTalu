@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saga Talu — EPUB Optimizer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Georgia, 'Times New Roman', serif;
+      background: #0d0d0d;
+      color: #c8b97a;
+      min-height: 100vh;
+      padding: 40px 20px 80px;
+    }
+    .container { max-width: 620px; margin: 0 auto; }
+    .back-link {
+      display: inline-block;
+      color: #5a4a20;
+      text-decoration: none;
+      font-size: 0.85em;
+      letter-spacing: 0.05em;
+      margin-bottom: 32px;
+    }
+    .back-link:hover { color: #c8a840; }
+    .header { text-align: center; margin-bottom: 36px; }
+    .header h1 { font-size: 1.9em; font-weight: 400; letter-spacing: 0.08em; color: #d4a94a; margin-bottom: 6px; }
+    .header p { font-size: 0.87em; color: #5a4a20; letter-spacing: 0.05em; }
+    .card {
+      background: #161616;
+      border: 1px solid #2a2415;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+    .card h2 { font-size: 0.85em; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: #7a6030; margin-bottom: 16px; }
+    .drop-zone {
+      border: 1px dashed #2a2415;
+      border-radius: 8px;
+      padding: 40px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .drop-zone:hover, .drop-zone.drag-over { border-color: #c8a840; }
+    .drop-zone input { display: none; }
+    .drop-zone-label { font-size: 1em; color: #a08040; margin-bottom: 6px; }
+    .drop-zone-sub { font-size: 0.82em; color: #3a3020; }
+    .option-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #1a1608;
+      font-size: 0.88em;
+      color: #a08040;
+    }
+    .option-row:last-child { border-bottom: none; }
+    .option-row input[type=checkbox] { width: 15px; height: 15px; cursor: pointer; accent-color: #c8a840; margin-top: 2px; flex-shrink: 0; }
+    .option-desc { color: #4a3a18; font-size: 0.82em; margin-top: 2px; font-family: sans-serif; }
+    .file-list { display: none; }
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #1a1608;
+      font-size: 0.87em;
+    }
+    .file-item:last-child { border-bottom: none; }
+    .file-name { flex: 1; color: #a08040; font-family: sans-serif; }
+    .file-status { font-size: 0.78em; padding: 2px 8px; border-radius: 4px; font-family: sans-serif; font-weight: 500; }
+    .status-pending { background: #1e1a0e; color: #5a4a20; }
+    .status-processing { background: #1e1608; color: #c8a840; }
+    .status-done { background: #0e1a0e; color: #4a8a4a; }
+    .status-error { background: #1a0e0e; color: #8a4a4a; }
+    .actions { display: flex; gap: 12px; margin-bottom: 16px; }
+    button {
+      padding: 10px 22px;
+      border: 1px solid #2a2415;
+      border-radius: 8px;
+      background: transparent;
+      color: #a08040;
+      font-size: 0.88em;
+      cursor: pointer;
+      font-family: Georgia, serif;
+      letter-spacing: 0.05em;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    button:hover { border-color: #c8a840; color: #d4a94a; }
+    button.primary { background: #1e1608; border-color: #c8a840; color: #d4a94a; }
+    button.primary:hover { background: #2a2010; }
+    button:disabled { opacity: 0.3; cursor: not-allowed; }
+    .log {
+      background: #0a0a0a;
+      border: 1px solid #1a1608;
+      border-radius: 8px;
+      padding: 14px;
+      font-family: monospace;
+      font-size: 0.8em;
+      line-height: 1.9;
+      max-height: 180px;
+      overflow-y: auto;
+      display: none;
+      color: #5a4a20;
+    }
+    .log-line.ok { color: #4a7a4a; }
+    .log-line.warn { color: #8a7030; }
+    .log-line.err { color: #8a4040; }
+    .footer { text-align: center; margin-top: 40px; font-size: 0.78em; color: #2a2010; letter-spacing: 0.05em; }
+    .footer a { color: #3a3020; text-decoration: none; }
+    .footer a:hover { color: #c8a840; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="../" class="back-link">← Flasher</a>
+
+    <div class="header">
+      <h1>EPUB Optimizer</h1>
+      <p>Optimize EPUBs for the Xteink X4 · Runs entirely in your browser</p>
+    </div>
+
+    <div class="card">
+      <h2>Drop files</h2>
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" accept=".epub" multiple>
+        <div class="drop-zone-label">Drop EPUB files here or click to browse</div>
+        <div class="drop-zone-sub">One or more .epub files accepted</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Options</h2>
+      <div class="option-row"><input type="checkbox" id="opt-strip-css" checked><div><div>Strip all CSS</div><div class="option-desc">Remove stylesheets for clean, fast e-ink rendering</div></div></div>
+      <div class="option-row"><input type="checkbox" id="opt-resize-images" checked><div><div>Resize images to 480×800</div><div class="option-desc">Downscale oversized images to match display resolution</div></div></div>
+      <div class="option-row"><input type="checkbox" id="opt-grayscale" checked><div><div>Convert images to grayscale</div><div class="option-desc">Remove color — the display is black and white</div></div></div>
+      <div class="option-row"><input type="checkbox" id="opt-strip-fonts" checked><div><div>Remove embedded fonts</div><div class="option-desc">Strip web fonts — device uses its own optimized fonts</div></div></div>
+      <div class="option-row"><input type="checkbox" id="opt-strip-js" checked><div><div>Remove JavaScript</div><div class="option-desc">Strip all scripts — not supported on device</div></div></div>
+      <div class="option-row"><input type="checkbox" id="opt-fix-encoding" checked><div><div>Fix encoding issues</div><div class="option-desc">Replace smart quotes and special characters</div></div></div>
+      <div class="option-row"><input type="checkbox" id="opt-strip-junk" checked><div><div>Strip junk files</div><div class="option-desc">Remove .DS_Store, __MACOSX, and similar</div></div></div>
+    </div>
+
+    <div class="card file-list" id="fileList">
+      <h2>Files</h2>
+      <div id="fileItems"></div>
+    </div>
+
+    <div class="actions">
+      <button class="primary" id="convertBtn" disabled>✦ Convert</button>
+      <button id="clearBtn" disabled>Clear</button>
+    </div>
+
+    <div class="log" id="log"></div>
+
+    <div class="footer">
+      <p><a href="../">← Back to Flasher</a> · <a href="https://sagatalu.com">Saga Talu</a> · <a href="https://github.com/HaploVoss/SagaTalu">GitHub</a></p>
+    </div>
+  </div>
+
+  <script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileList = document.getElementById('fileList');
+    const fileItems = document.getElementById('fileItems');
+    const convertBtn = document.getElementById('convertBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const logEl = document.getElementById('log');
+    let files = [];
+
+    function log(msg, type = '') {
+      logEl.style.display = 'block';
+      const line = document.createElement('div');
+      line.className = 'log-line' + (type ? ' ' + type : '');
+      line.textContent = msg;
+      logEl.appendChild(line);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function addFiles(newFiles) {
+      for (const f of newFiles) {
+        if (f.name.endsWith('.epub') && !files.find(x => x.name === f.name)) {
+          files.push(f);
+          const item = document.createElement('div');
+          item.className = 'file-item';
+          item.innerHTML = `<span class="file-name">${f.name}</span><span class="file-status status-pending" id="status-${files.length}">Pending</span>`;
+          fileItems.appendChild(item);
+        }
+      }
+      fileList.style.display = files.length ? 'block' : 'none';
+      convertBtn.disabled = files.length === 0;
+      clearBtn.disabled = files.length === 0;
+    }
+
+    function setStatus(idx, text, cls) {
+      const el = document.getElementById('status-' + idx);
+      if (el) { el.textContent = text; el.className = 'file-status ' + cls; }
+    }
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); addFiles(e.dataTransfer.files); });
+    fileInput.addEventListener('change', () => addFiles(fileInput.files));
+
+    clearBtn.addEventListener('click', () => {
+      files = []; fileItems.innerHTML = '';
+      fileList.style.display = 'none';
+      convertBtn.disabled = true; clearBtn.disabled = true;
+      logEl.innerHTML = ''; logEl.style.display = 'none';
+    });
+
+    function getOptions() {
+      return {
+        stripCss: document.getElementById('opt-strip-css').checked,
+        resizeImages: document.getElementById('opt-resize-images').checked,
+        grayscale: document.getElementById('opt-grayscale').checked,
+        stripFonts: document.getElementById('opt-strip-fonts').checked,
+        stripJs: document.getElementById('opt-strip-js').checked,
+        fixEncoding: document.getElementById('opt-fix-encoding').checked,
+        stripJunk: document.getElementById('opt-strip-junk').checked,
+      };
+    }
+
+    const JUNK = ['.DS_Store', '__MACOSX', 'Thumbs.db', 'desktop.ini'];
+    const FONT_EXTS = ['.ttf', '.otf', '.woff', '.woff2', '.eot'];
+    const IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
+
+    function isJunk(p) { return JUNK.some(j => p.includes(j)); }
+    function isFont(p) { return FONT_EXTS.some(e => p.toLowerCase().endsWith(e)); }
+    function isImage(p) { return IMAGE_EXTS.some(e => p.toLowerCase().endsWith(e)); }
+    function isCss(p) { return p.toLowerCase().endsWith('.css'); }
+    function isJs(p) { return p.toLowerCase().endsWith('.js'); }
+
+    function stripCssFromHtml(h) {
+      h = h.replace(/<link[^>]*rel=["']stylesheet["'][^>]*>/gi, '');
+      h = h.replace(/<link[^>]*href=["'][^"']*\.css["'][^>]*>/gi, '');
+      h = h.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
+      h = h.replace(/\s*style=["'][^"']*["']/gi, '');
+      return h;
+    }
+    function stripJsFromHtml(h) {
+      return h.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '').replace(/<script[^>]*\/>/gi, '');
+    }
+    function fixEncoding(t) {
+      return t.replace(/\u2018|\u2019/g, "'").replace(/\u201C|\u201D/g, '"')
+              .replace(/\u2013/g, '-').replace(/\u2014/g, '--')
+              .replace(/\u2026/g, '...').replace(/\u00A0/g, ' ');
+    }
+
+    async function processImage(data, opts) {
+      return new Promise(resolve => {
+        const blob = new Blob([data]);
+        const url = URL.createObjectURL(blob);
+        const img = new Image();
+        img.onload = () => {
+          URL.revokeObjectURL(url);
+          let w = img.width, h = img.height;
+          if (opts.resizeImages && (w > 480 || h > 800)) {
+            const s = Math.min(480/w, 800/h);
+            w = Math.round(w*s); h = Math.round(h*s);
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          if (opts.grayscale) ctx.filter = 'grayscale(1)';
+          ctx.drawImage(img, 0, 0, w, h);
+          canvas.toBlob(b => b.arrayBuffer().then(buf => resolve(new Uint8Array(buf))), 'image/jpeg', 0.82);
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); resolve(data); };
+        img.src = url;
+      });
+    }
+
+    async function processEpub(file, idx, opts) {
+      setStatus(idx, 'Processing...', 'status-processing');
+      log(`Processing: ${file.name}`);
+      const zip = await JSZip.loadAsync(await file.arrayBuffer());
+      const outZip = new JSZip();
+      let skipped = 0, images = 0;
+
+      for (const [path, entry] of Object.entries(zip.files)) {
+        if (entry.dir) { outZip.folder(path); continue; }
+        if (opts.stripJunk && isJunk(path)) { skipped++; continue; }
+        if (opts.stripFonts && isFont(path)) { skipped++; log(`  Stripped font: ${path}`, 'warn'); continue; }
+        if (opts.stripJs && isJs(path)) { skipped++; continue; }
+        if (opts.stripCss && isCss(path)) { skipped++; log(`  Stripped CSS: ${path}`, 'warn'); continue; }
+
+        if (isImage(path)) {
+          const data = await entry.async('uint8array');
+          outZip.file(path, await processImage(data, opts));
+          images++;
+        } else {
+          let content = await entry.async('string');
+          if (path.match(/\.(html?|xhtml?|xml|opf|ncx)$/i)) {
+            if (opts.stripCss) content = stripCssFromHtml(content);
+            if (opts.stripJs) content = stripJsFromHtml(content);
+            if (opts.fixEncoding) content = fixEncoding(content);
+          }
+          outZip.file(path, content);
+        }
+      }
+
+      log(`  Images: ${images}  Removed: ${skipped}`, 'ok');
+      const outBlob = await outZip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+      const outName = file.name.replace('.epub', '-sagatalu.epub');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(outBlob);
+      a.download = outName;
+      a.click();
+      URL.revokeObjectURL(a.href);
+
+      const origKB = Math.round(file.size/1024);
+      const newKB = Math.round(outBlob.size/1024);
+      log(`  Done: ${origKB}KB → ${newKB}KB (${Math.round(100 - newKB/origKB*100)}% smaller)`, 'ok');
+      setStatus(idx, 'Done', 'status-done');
+    }
+
+    convertBtn.addEventListener('click', async () => {
+      convertBtn.disabled = true;
+      const opts = getOptions();
+      for (let i = 0; i < files.length; i++) {
+        try { await processEpub(files[i], i+1, opts); }
+        catch(e) { log(`Error: ${files[i].name} — ${e.message}`, 'err'); setStatus(i+1, 'Error', 'status-error'); }
+      }
+      convertBtn.disabled = false;
+      log('All done.', 'ok');
+    });
+  </script>
+</body>
+</html>

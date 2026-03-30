@@ -3,42 +3,148 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SagaTalu Flasher</title>
+  <title>Saga Talu — Device Flasher</title>
   <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js"></script>
   <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: sans-serif;
-      max-width: 600px;
-      margin: 60px auto;
-      padding: 0 20px;
+      font-family: Georgia, 'Times New Roman', serif;
+      background: #0d0d0d;
+      color: #c8b97a;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 520px;
+      width: 100%;
       text-align: center;
-      background: #f9f9f9;
-      color: #222;
     }
-    h1 { font-size: 2em; margin-bottom: 0.2em; }
-    p { line-height: 1.6; color: #444; }
-    esp-web-install-button {
-      margin-top: 30px;
+    .logo {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 24px;
+      opacity: 0.92;
     }
-    .note {
-      margin-top: 40px;
+    h1 {
+      font-size: 2.2em;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      color: #d4a94a;
+      margin-bottom: 6px;
+    }
+    .tagline {
       font-size: 0.85em;
-      color: #888;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #7a6a3a;
+      margin-bottom: 40px;
     }
+    .card {
+      background: #161616;
+      border: 1px solid #2a2415;
+      border-radius: 12px;
+      padding: 32px;
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: 1.1em;
+      font-weight: 400;
+      letter-spacing: 0.06em;
+      color: #d4a94a;
+      margin-bottom: 12px;
+    }
+    .card p {
+      font-size: 0.88em;
+      color: #8a7a4a;
+      line-height: 1.8;
+      margin-bottom: 20px;
+    }
+    esp-web-install-button {
+      --esp-tools-button-color: #d4a94a;
+      --esp-tools-button-border-color: #d4a94a;
+      margin: 8px 0;
+    }
+    .steps {
+      text-align: left;
+      margin: 16px 0;
+    }
+    .step {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 8px 0;
+      border-bottom: 1px solid #1e1a0e;
+      font-size: 0.87em;
+      color: #8a7a4a;
+    }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      min-width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1px solid #3a2e10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.78em;
+      color: #c8a840;
+      margin-top: 1px;
+    }
+    .divider {
+      border: none;
+      border-top: 1px solid #1e1a0e;
+      margin: 20px 0;
+    }
+    .tools-link {
+      display: inline-block;
+      color: #c8a840;
+      text-decoration: none;
+      font-size: 0.87em;
+      letter-spacing: 0.05em;
+      border: 1px solid #2a2415;
+      border-radius: 8px;
+      padding: 10px 20px;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .tools-link:hover { border-color: #c8a840; color: #e0c060; }
+    .footer {
+      margin-top: 32px;
+      font-size: 0.78em;
+      color: #3a3020;
+      letter-spacing: 0.05em;
+    }
+    .footer a { color: #5a4a20; text-decoration: none; }
+    .footer a:hover { color: #c8a840; }
   </style>
 </head>
 <body>
-  <h1>SagaTalu</h1>
-  <p>Custom firmware for the Xteink X4.<br>
-  Focused writing and reading with wireless file management.</p>
+  <div class="container">
+    <img class="logo" src="https://sagatalu.com/static/ST_F__Transparent_Logo_775.png" alt="Saga Talu">
+    <h1>Saga Talu</h1>
+    <p class="tagline">Custom firmware for the Xteink X4</p>
 
-  <esp-web-install-button
-    manifest="manifest.json">
-  </esp-web-install-button>
+    <div class="card">
+      <h2>Flash Firmware</h2>
+      <p>Connect your Xteink X4 via USB-C, then click Install. Requires Chrome, Edge, or Opera.</p>
+      <esp-web-install-button manifest="manifest.json"></esp-web-install-button>
+      <hr class="divider">
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><span>Connect the device via USB-C</span></div>
+        <div class="step"><div class="step-num">2</div><span>Click Install and select the serial port</span></div>
+        <div class="step"><div class="step-num">3</div><span>Wait for the flash to complete (~30 seconds)</span></div>
+        <div class="step"><div class="step-num">4</div><span>Go to Settings → WiFi Setup to connect to your network</span></div>
+      </div>
+    </div>
 
-  <p class="note">
-    Requires Chrome, Edge, or Opera browser.<br>
-    Connect your Xteink X4 via USB-C before clicking Install.
-  </p>
+    <a href="convert/" class="tools-link">✦ EPUB Optimizer →</a>
+
+    <div class="footer">
+      <p>Built on <a href="https://github.com/psychoplath9450/SUMI">SUMI</a> · <a href="https://github.com/HaploVoss/SagaTalu">Source on GitHub</a> · <a href="https://sagatalu.com">Saga Talu</a></p>
+    </div>
+  </div>
 </body>
 </html>

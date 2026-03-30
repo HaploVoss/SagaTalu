@@ -474,18 +474,18 @@ void HomeState::render(Core& core) {
     int y = boxY + 24;
 
     // Title
-    renderer_.drawCenteredText(theme.menuFontId, y, "Welcome to SUMI", theme.primaryTextBlack, EpdFontFamily::BOLD);
+    renderer_.drawCenteredText(theme.menuFontId, y, "Welcome to Saga Talu", theme.primaryTextBlack, EpdFontFamily::BOLD);
     y += lineH + 12;
 
     // Body text
     const char* lines[] = {
-      "SUMI reads any EPUB, but files",
+      "Saga Talu reads any EPUB, but files",
       "optimized on sumi.page load faster,",
       "look sharper, and use less memory.",
       "",
       "Open sumi.page in Chrome or Edge",
-      "with Bluetooth enabled to convert",
-      "and send files wirelessly.",
+      "to easily convert your files.",
+      
     };
     for (const char* line : lines) {
       if (line[0] == '\0') {

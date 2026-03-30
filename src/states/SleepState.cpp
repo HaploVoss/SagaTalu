@@ -97,8 +97,6 @@ void SleepState::renderDefaultSleepScreen(const Core& core) const {
 
   renderer_.clearScreen(THEME.backgroundColor);
   renderer_.drawImage(SumiLogo, (pageWidth) / 2 + SUMI_LOGO_W * 2 / 5, (pageHeight - SUMI_LOGO_H) / 2, SUMI_LOGO_W, SUMI_LOGO_H);
-  renderer_.drawCenteredText(THEME.uiFontId, pageHeight / 2 + 70, "SUMI", THEME.primaryTextBlack, BOLD);
-  renderer_.drawCenteredText(THEME.smallFontId, pageHeight / 2 + 110, "SLEEPING", THEME.primaryTextBlack);
   renderer_.drawCenteredText(THEME.smallFontId, pageHeight - 30, SUMI_VERSION, THEME.primaryTextBlack);
 
   // Make sleep screen dark unless light is selected in settings
