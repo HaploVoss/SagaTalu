@@ -89,7 +89,7 @@
 
     <div class="log" id="log"></div>
 
-    <p style="text-align:center;font-size:0.72em;color:#3a3020;margin-bottom:8px">updated 05:27 Mar 31</p>
+    <p style="text-align:center;font-size:0.72em;color:#3a3020;margin-bottom:8px">updated 17:25 Mar 31</p>
     <div class="footer">
       <p><a href="../">← Back to Flasher</a> · <a href="https://sagatalu.com">Saga Talu</a> · <a href="https://github.com/HaploVoss/SagaTalu">GitHub</a></p>
     </div>
@@ -357,6 +357,18 @@
           const gray = new Float32Array(w*h);
           for (let i=0; i<w*h; i++) {
             gray[i] = 0.299*pixels[i*4] + 0.587*pixels[i*4+1] + 0.114*pixels[i*4+2];
+          }
+
+          // Percentile contrast stretch — push highlights to white, darks to black
+          // This matches SUMI converter behavior of polarizing toward extremes
+          const sortedG = Float32Array.from(gray).sort();
+          const pLow  = sortedG[Math.floor(w*h * 0.02)];
+          const pHigh = sortedG[Math.floor(w*h * 0.90)];
+          const rangeG = pHigh - pLow;
+          if (rangeG > 10) {
+            for (let i=0; i<w*h; i++) {
+              gray[i] = Math.max(0, Math.min(255, (gray[i]-pLow) / rangeG * 255));
+            }
           }
 
           // Atkinson dithering matching firmware BitmapHelpers.h AtkinsonDitherer exactly
