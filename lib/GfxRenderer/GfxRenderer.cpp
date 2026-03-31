@@ -234,12 +234,16 @@ void GfxRenderer::drawBitmap(const Bitmap& bitmap, const int x, const int y, con
                              const int maxHeight) const {
   float scale = 1.0f;
   bool isScaled = false;
-  if (maxWidth > 0 && bitmap.getWidth() > maxWidth) {
+  if (maxWidth > 0 && maxHeight > 0) {
+    float scaleW = static_cast<float>(maxWidth) / static_cast<float>(bitmap.getWidth());
+    float scaleH = static_cast<float>(maxHeight) / static_cast<float>(bitmap.getHeight());
+    scale = std::min(scaleW, scaleH);
+    if (scale != 1.0f) isScaled = true;
+  } else if (maxWidth > 0 && bitmap.getWidth() > maxWidth) {
     scale = static_cast<float>(maxWidth) / static_cast<float>(bitmap.getWidth());
     isScaled = true;
-  }
-  if (maxHeight > 0 && bitmap.getHeight() > maxHeight) {
-    scale = std::min(scale, static_cast<float>(maxHeight) / static_cast<float>(bitmap.getHeight()));
+  } else if (maxHeight > 0 && bitmap.getHeight() > maxHeight) {
+    scale = static_cast<float>(maxHeight) / static_cast<float>(bitmap.getHeight());
     isScaled = true;
   }
 
@@ -259,28 +263,36 @@ void GfxRenderer::drawBitmap(const Bitmap& bitmap, const int x, const int y, con
     return;
   }
 
-  for (int bmpY = 0; bmpY < bitmap.getHeight(); bmpY++) {
-    // The BMP's (0, 0) is the bottom-left corner (if the height is positive, top-left if negative).
-    // Screen's (0, 0) is the top-left corner.
-    int bmpOffset = bitmap.isTopDown() ? bmpY : bitmap.getHeight() - 1 - bmpY;
-    int screenY = isScaled ? y + static_cast<int>(std::floor(bmpOffset * scale)) : y + bmpOffset;
-    if (screenY >= getScreenHeight()) {
-      break;
-    }
+  const int scaledWidth  = isScaled ? static_cast<int>(bitmap.getWidth()  * scale) : bitmap.getWidth();
+  const int scaledHeight = isScaled ? static_cast<int>(bitmap.getHeight() * scale) : bitmap.getHeight();
+  int lastBmpY = -1;
 
-    if (bitmap.readRow(bitmapOutputRow_, bitmapRowBytes_, bmpY) != BmpReaderError::Ok) {
-      Serial.printf("[%lu] [GFX] Failed to read row %d from bitmap\n", millis(), bmpY);
-      return;
-    }
+  for (int screenRow = 0; screenRow < scaledHeight; screenRow++) {
+    const int screenY = y + screenRow;
+    if (screenY < 0) continue;
+    if (screenY >= getScreenHeight()) break;
 
-    for (int bmpX = 0; bmpX < bitmap.getWidth(); bmpX++) {
-      int screenX = isScaled ? x + static_cast<int>(std::floor(bmpX * scale)) : x + bmpX;
-      if (screenX >= getScreenWidth()) {
-        break;
+    // Inverse map: which source row?
+    const int bmpY = std::min(static_cast<int>(screenRow / scale), bitmap.getHeight() - 1);
+
+    // Only re-read row if it changed
+    if (bmpY != lastBmpY) {
+      if (bitmap.readRow(bitmapOutputRow_, bitmapRowBytes_, bmpY) != BmpReaderError::Ok) {
+        Serial.printf("[%lu] [GFX] Failed to read row %d from bitmap\n", millis(), bmpY);
+        return;
       }
+      lastBmpY = bmpY;
+    }
+
+    for (int screenCol = 0; screenCol < scaledWidth; screenCol++) {
+      const int screenX = x + screenCol;
+      if (screenX < 0) continue;
+      if (screenX >= getScreenWidth()) break;
+
+      // Inverse map: which source column?
+      const int bmpX = std::min(static_cast<int>(screenCol / scale), bitmap.getWidth() - 1);
 
       const uint8_t val = bitmapOutputRow_[bmpX / 4] >> (6 - ((bmpX * 2) % 8)) & 0x3;
-
       if (renderMode == BW && val < 3) {
         drawPixel(screenX, screenY);
       } else if (renderMode == GRAYSCALE_MSB && (val == 1 || val == 2)) {

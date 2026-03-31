@@ -9,6 +9,7 @@
 #include <SDCardManager.h>
 
 #include "../../src/config.h"
+#include "../../src/core/MemoryArena.h"
 
 namespace CoverHelpers {
 
@@ -95,25 +96,26 @@ bool renderCoverFromBmp(GfxRenderer& renderer, const std::string& bmpPath, int m
     pagesUntilFullRefresh--;
   }
 
-  // Grayscale rendering (if bitmap supports it and enough heap for 6x8KB BW backup)
-  // Skip grayscale when heap is tight (e.g. BLE connected) to avoid fragmentation
-  if (bitmap.hasGreyscale() && ESP.getFreeHeap() >= 60000 && renderer.storeBwBuffer()) {
+  // Release work buffer temporarily to free 26KB for BW buffer chunks (6x8KB=48KB needed)
+  const bool workWasInit = sumi::MemoryArena::isWorkInitialized();
+  if (workWasInit) sumi::MemoryArena::releaseWork();
+  if (bitmap.hasGreyscale() && renderer.storeBwBuffer()) {
     bitmap.rewindToData();
     renderer.clearScreen(0x00);
     renderer.setRenderMode(GfxRenderer::GRAYSCALE_LSB);
     renderer.drawBitmap(bitmap, rect.x, rect.y, rect.width, rect.height);
     renderer.copyGrayscaleLsbBuffers();
-
     bitmap.rewindToData();
     renderer.clearScreen(0x00);
     renderer.setRenderMode(GfxRenderer::GRAYSCALE_MSB);
     renderer.drawBitmap(bitmap, rect.x, rect.y, rect.width, rect.height);
     renderer.copyGrayscaleMsbBuffers();
-
     renderer.displayGrayBuffer(turnOffScreen);
     renderer.setRenderMode(GfxRenderer::BW);
     renderer.restoreBwBuffer();
   }
+
+  if (workWasInit) sumi::MemoryArena::reclaimWork();
 
   coverFile.close();
   Serial.printf("[%lu] [CVR] Rendered cover from BMP\n", millis());

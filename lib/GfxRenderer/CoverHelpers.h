@@ -21,25 +21,22 @@ struct CenteredRect {
 inline CenteredRect calculateCenteredRect(int imageWidth, int imageHeight, int viewportX, int viewportY,
                                           int viewportWidth, int viewportHeight) {
   CenteredRect result;
-  result.width = viewportWidth;
-  result.height = viewportHeight;
-
-  if (imageWidth > viewportWidth || imageHeight > viewportHeight) {
-    const float imgRatio = static_cast<float>(imageWidth) / static_cast<float>(imageHeight);
-    const float vpRatio = static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight);
-
-    if (imgRatio > vpRatio) {
-      result.x = viewportX;
-      result.y = viewportY + (viewportHeight - static_cast<int>(viewportWidth / imgRatio)) / 2;
-    } else {
-      result.x = viewportX + (viewportWidth - static_cast<int>(viewportHeight * imgRatio)) / 2;
-      result.y = viewportY;
-    }
+  const float imgRatio = static_cast<float>(imageWidth) / static_cast<float>(imageHeight);
+  const float vpRatio = static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight);
+  // Scale to fit viewport (both up and down) maintaining aspect ratio
+  if (imgRatio > vpRatio) {
+    // Image is wider relative to viewport — fit to width
+    result.width = viewportWidth;
+    result.height = static_cast<int>(viewportWidth / imgRatio);
+    result.x = viewportX;
+    result.y = viewportY + (viewportHeight - result.height) / 2;
   } else {
-    result.x = viewportX + (viewportWidth - imageWidth) / 2;
-    result.y = viewportY + (viewportHeight - imageHeight) / 2;
+    // Image is taller relative to viewport — fit to height
+    result.width = static_cast<int>(viewportHeight * imgRatio);
+    result.height = viewportHeight;
+    result.x = viewportX + (viewportWidth - result.width) / 2;
+    result.y = viewportY;
   }
-
   return result;
 }
 

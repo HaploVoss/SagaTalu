@@ -1339,14 +1339,17 @@ bool ReaderState::renderCoverPage(Core& core) {
   Serial.printf("[%lu] [RDR] Generating cover for reader...\n", millis());
   // Release primary+work buffers for JPEG decode headroom, but keep task stack
   // so PageCache can start after cover generation completes
+  // Only release arena if cover BMP not already cached
+  std::string cachedCoverPath = core.content.getCoverPath();
+  const bool coverNeedsGeneration = cachedCoverPath.empty() || !SdMan.exists(cachedCoverPath.c_str());
   bool arenaWasInit = sumi::MemoryArena::isInitialized();
-  if (arenaWasInit) {
+  if (arenaWasInit && coverNeedsGeneration) {
     sumi::MemoryArena::releasePrimary();
     sumi::MemoryArena::releaseWork();
     Serial.printf("[%lu] [RDR] Arena partial release for cover gen. Free heap: %u\n", millis(), ESP.getFreeHeap());
   }
   std::string coverPath = core.content.generateCover(true);
-  if (arenaWasInit) {
+  if (arenaWasInit && coverNeedsGeneration) {
     sumi::MemoryArena::reclaimPrimary();
     sumi::MemoryArena::reclaimWork();
     Serial.printf("[%lu] [RDR] Arena restored after cover gen\n", millis());

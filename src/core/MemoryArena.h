@@ -61,6 +61,8 @@ class MemoryArena {
   // Used to free heap for parsing when BLE is connected (parser uses framebuffer as ZIP dict).
   static void releasePrimary();
   static bool reclaimPrimary();
+  
+  static bool isWorkInitialized() { return workBase_ != nullptr; }
 
   static void releaseWork();
   static bool reclaimWork();
