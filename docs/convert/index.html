@@ -89,7 +89,7 @@
 
     <div class="log" id="log"></div>
 
-    <p style="text-align:center;font-size:0.72em;color:#3a3020;margin-bottom:8px">updated 17:57 Mar 31</p>
+    <p style="text-align:center;font-size:0.72em;color:#3a3020;margin-bottom:8px">updated 20:55 Mar 31</p>
     <div class="footer">
       <p><a href="../">← Back to Flasher</a> · <a href="https://sagatalu.com">Saga Talu</a> · <a href="https://github.com/HaploVoss/SagaTalu">GitHub</a></p>
     </div>
@@ -435,6 +435,8 @@
       log(`Processing: ${file.name}`);
       const zip = await JSZip.loadAsync(await file.arrayBuffer());
       const outZip = new JSZip();
+      // mimetype must be first and uncompressed per EPUB spec
+      outZip.file('mimetype', 'application/epub+zip', {compression:'STORE'});
       let skipped=0, imagesConverted=0;
       const imageMap = [];
 
@@ -446,7 +448,7 @@
           const bmpData = await imageTo2BitBmp(data, opts);
           if (bmpData) {
             const newPath = path.replace(/\.(jpg|jpeg|png|gif|webp)$/i, '.bmp');
-            outZip.file(newPath, bmpData);
+            outZip.file(newPath, bmpData, {compression:'STORE'});
             imageMap.push([path, newPath]);
             imagesConverted++;
             log(`  Converted: ${path.split('/').pop()} → ${newPath.split('/').pop()}`, 'ok');
@@ -460,8 +462,9 @@
       // Second pass: all other files
       for (const [path, entry] of Object.entries(zip.files)) {
         if (entry.dir) { outZip.folder(path); continue; }
+        if (path === 'mimetype') continue; // already added first, uncompressed
         if (opts.convertImages && isImage(path)) continue;
-        if (isBmp(path)) { outZip.file(path, await entry.async('uint8array')); continue; }
+        if (isBmp(path)) { outZip.file(path, await entry.async('uint8array'), {compression:'STORE'}); continue; }
         if (opts.stripJunk && isJunk(path)) { skipped++; continue; }
         if (opts.stripFonts && isFont(path)) { skipped++; log(`  Stripped font: ${path.split('/').pop()}`, 'warn'); continue; }
         if (opts.stripJs && isJs(path)) { skipped++; continue; }
@@ -478,17 +481,48 @@
       }
 
       // Add sumi-cover.bmp and sumi-thumb.bmp — device prioritizes these
-      const coverKey = Object.keys(outZip.files).find(p =>
-        p.toLowerCase() === 'cover.bmp');
+      // Find cover: prefer OPF metadata cover, fall back to name patterns
+      let coverKey = null;
+      // Try to find from imageMap (was it converted from a known cover image?)
+      // Check OPF for cover reference
+      for (const [path, entry] of Object.entries(zip.files)) {
+        if (path.match(/\.opf$/i)) {
+          const opfText = await entry.async('string');
+          // Look for meta name="cover" content="id"
+          const metaMatch = opfText.match(/name=["']cover["'][^>]*content=["']([^"']+)["']/i) ||
+                           opfText.match(/content=["']([^"']+)["'][^>]*name=["']cover["']/i);
+          if (metaMatch) {
+            const coverId = metaMatch[1];
+            const itemMatch = opfText.match(new RegExp('id=["']' + coverId + '["'][^>]*href=["']([^"']+)["']', 'i')) ||
+                             opfText.match(new RegExp('href=["']([^"']+)["'][^>]*id=["']' + coverId + '["']', 'i'));
+            if (itemMatch) {
+              // Resolve relative to OPF location
+              const opfDir = path.includes('/') ? path.substring(0, path.lastIndexOf('/') + 1) : '';
+              const coverHref = itemMatch[1].replace(/\.(jpg|jpeg|png|gif|webp)$/i, '.bmp');
+              const fullPath = opfDir + coverHref;
+              if (outZip.files[fullPath]) coverKey = fullPath;
+              if (!coverKey && outZip.files[coverHref]) coverKey = coverHref;
+            }
+          }
+          break;
+        }
+      }
+      // Fall back to name-based detection
+      if (!coverKey) {
+        coverKey = Object.keys(outZip.files).find(p => {
+          const name = p.toLowerCase().split('/').pop();
+          return name.endsWith('.bmp') && (name.startsWith('cover') || name === 'coverdesign.bmp');
+        });
+      }
       if (coverKey) {
         const coverData = await outZip.files[coverKey].async('uint8array');
-        outZip.file('sumi-cover.bmp', coverData);
+        outZip.file('sumi-cover.bmp', coverData, {compression:'STORE'});
         log('  Added sumi-cover.bmp for device compatibility', 'ok');
 
         // Generate sumi-thumb.bmp at 271x440 (device thumbnail size)
         const thumbBmp = await scaleBmp2bit(coverData, 258, 440);
         if (thumbBmp) {
-          outZip.file('sumi-thumb.bmp', thumbBmp);
+          outZip.file('sumi-thumb.bmp', thumbBmp, {compression:'STORE'});
           log('  Added sumi-thumb.bmp for home screen thumbnail', 'ok');
         }
       }

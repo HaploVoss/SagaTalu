@@ -110,6 +110,34 @@ bool MemoryArena::reclaimPrimary() {
   return true;
 }
 
+void MemoryArena::releaseWork() {
+  if (!workBase_) return;
+  heap_caps_free(workBase_);
+  workBase_ = nullptr;
+  scratchBuffer = nullptr;
+  ditherRegion = nullptr;
+  imageRowRegion = nullptr;
+  scratchOffset_ = 0;
+  Serial.printf("[%lu] [MEM] Released work 26KB, heap free=%lu\n", millis(), ESP.getFreeHeap());
+}
+
+bool MemoryArena::reclaimWork() {
+  if (workBase_) return true;
+  workBase_ = static_cast<uint8_t*>(heap_caps_malloc(WORK_BUFFER_SIZE, MALLOC_CAP_8BIT));
+  if (!workBase_) {
+    Serial.printf("[%lu] [MEM] Failed to reclaim work 26KB\n", millis());
+    return false;
+  }
+  size_t offset = 0;
+  scratchBuffer = workBase_ + offset; offset += SCRATCH_BUFFER_SIZE;
+  ditherRegion = workBase_ + offset; offset += DITHER_REGION_SIZE;
+  imageRowRegion = workBase_ + offset;
+  memset(workBase_, 0, WORK_BUFFER_SIZE);
+  scratchOffset_ = 0;
+  Serial.printf("[%lu] [MEM] Reclaimed work 26KB, heap free=%lu\n", millis(), ESP.getFreeHeap());
+  return true;
+}
+
 void MemoryArena::release() {
   if (!initialized_) {
     return;

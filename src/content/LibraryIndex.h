@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include "../config.h"
 
 namespace sumi {
 
@@ -51,7 +52,7 @@ class LibraryIndex {
  private:
   static constexpr uint8_t VERSION = 2;  // v2: added contentHint byte
   static constexpr int MAX_ENTRIES = 200;
-  static constexpr const char* INDEX_PATH = "/.sumi/library.bin";
+  static constexpr const char* INDEX_PATH = SUMI_DIR "/library.bin";
 };
 
 }  // namespace sumi

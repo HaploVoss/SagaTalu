@@ -108,7 +108,7 @@ async function navigate(path) {
     const tr = document.createElement('tr');
     if (item.isDir) {
       const childPath = (currentPath === '/' ? '' : currentPath) + '/' + item.name;
-      tr.innerHTML = '<td class="dir" colspan="2"><a href="#" onclick="navigate(\'' + childPath + '\')">[+] ' + item.name + '</a></td><td></td>';
+      tr.innerHTML = '<td class="dir"><a href="#" onclick="navigate(\'' + childPath + '\')">[+] ' + item.name + '</a></td><td></td><td class="actions"><button class="btn-sm btn-del" onclick="delFile(\''+item.name+'\')">Delete</button></td>';
     } else {
       tr.innerHTML =
         '<td>' + item.name + '</td>' +
@@ -336,13 +336,34 @@ void WifiTransfer::handleFileList() {
   client.stop();
 }
 
+static void removeRecursive(const char* path) {
+  FsFile dir = SdMan.open(path);
+  if (!dir) return;
+  if (dir.isDirectory()) {
+    FsFile entry = dir.openNextFile();
+    while (entry) {
+      char nameBuf[256];
+      entry.getName(nameBuf, sizeof(nameBuf));
+      String childPath = String(path) + "/" + nameBuf;
+      entry.close();
+      removeRecursive(childPath.c_str());
+      entry = dir.openNextFile();
+    }
+    dir.close();
+    SdMan.rmdir(path);
+  } else {
+    dir.close();
+    SdMan.remove(path);
+  }
+}
+
 void WifiTransfer::handleDelete() {
   if (!server_->hasArg("path")) {
     server_->send(400, "text/plain", "Missing path");
     return;
   }
   String path = server_->arg("path");
-  SdMan.remove(path.c_str());
+  removeRecursive(path.c_str());
   server_->send(200, "text/plain", "Deleted");
 }
 

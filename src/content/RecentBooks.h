@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include "../config.h"
 
 namespace sumi {
 
@@ -53,7 +54,7 @@ class RecentBooks {
 
  private:
   static constexpr uint8_t VERSION = 2;  // v2: added thumbPath field
-  static constexpr const char* INDEX_PATH = "/.sumi/recent.bin";
-};
+// Stored in SUMI_DIR/recent.bin
+  static constexpr const char* INDEX_PATH = SUMI_DIR "/recent.bin";};
 
 }  // namespace sumi

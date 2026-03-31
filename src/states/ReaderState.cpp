@@ -1337,20 +1337,19 @@ ReaderState::Viewport ReaderState::getReaderViewport() const {
 
 bool ReaderState::renderCoverPage(Core& core) {
   Serial.printf("[%lu] [RDR] Generating cover for reader...\n", millis());
-  // Release memory arena to free heap for JPEG decode buffers (~150KB needed)
+  // Release primary+work buffers for JPEG decode headroom, but keep task stack
+  // so PageCache can start after cover generation completes
   bool arenaWasInit = sumi::MemoryArena::isInitialized();
   if (arenaWasInit) {
-    sumi::MemoryArena::release();
-    Serial.printf("[%lu] [RDR] Arena released for cover gen. Free heap: %u\n", millis(), ESP.getFreeHeap());
+    sumi::MemoryArena::releasePrimary();
+    sumi::MemoryArena::releaseWork();
+    Serial.printf("[%lu] [RDR] Arena partial release for cover gen. Free heap: %u\n", millis(), ESP.getFreeHeap());
   }
   std::string coverPath = core.content.generateCover(true);
-  if (arenaWasInit && !sumi::MemoryArena::isInitialized()) {
-    sumi::MemoryArena::init();
+  if (arenaWasInit) {
+    sumi::MemoryArena::reclaimPrimary();
+    sumi::MemoryArena::reclaimWork();
     Serial.printf("[%lu] [RDR] Arena restored after cover gen\n", millis());
-  }
-  if (coverPath.empty()) {
-    Serial.printf("[%lu] [RDR] No cover available, skipping cover page\n", millis());
-    return false;
   }
 
   Serial.printf("[%lu] [RDR] Rendering cover page from: %s\n", millis(), coverPath.c_str());

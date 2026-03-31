@@ -62,6 +62,9 @@ class MemoryArena {
   static void releasePrimary();
   static bool reclaimPrimary();
 
+  static void releaseWork();
+  static bool reclaimWork();
+
   // Check if arena is currently allocated
   static bool isInitialized() { return initialized_; }
 
