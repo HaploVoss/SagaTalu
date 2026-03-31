@@ -410,10 +410,14 @@ bool earlyInit() {
     return false;
   }
 
-  // Migrate data directory from .papyrix to .sumi (one-time)
-  if (SdMan.exists("/.papyrix") && !SdMan.exists("/.sumi")) {
-    Serial.println("[MIGRATE] Renaming /.papyrix -> /.sumi");
-    SdMan.rename("/.papyrix", "/.sumi");
+  // Migrate data directory to .sagatalu (one-time)
+  if (SdMan.exists("/.papyrix") && !SdMan.exists("/.sagatalu")) {
+    Serial.println("[MIGRATE] Renaming /.papyrix -> /.sagatalu");
+    SdMan.rename("/.papyrix", "/.sagatalu");
+  }
+  if (SdMan.exists("/.sumi") && !SdMan.exists("/.sagatalu")) {
+    Serial.println("[MIGRATE] Renaming /.sumi -> /.sagatalu");
+    SdMan.rename("/.sumi", "/.sagatalu");
   }
 
   // Detect first boot (no .sumi folder yet) — used for welcome overlay on home screen

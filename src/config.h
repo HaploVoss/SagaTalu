@@ -77,7 +77,7 @@
 #define SMALL_FONT_ID 1482513144
 
 // System directory for settings and cache
-#define SUMI_DIR "/.sumi"
+#define SUMI_DIR "/.sagatalu"
 #define SUMI_CACHE_DIR SUMI_DIR "/cache"
 #define SUMI_SETTINGS_FILE SUMI_DIR "/settings.bin"
 #define SUMI_STATE_FILE SUMI_DIR "/state.bin"
