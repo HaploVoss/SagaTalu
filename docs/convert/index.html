@@ -89,7 +89,7 @@
 
     <div class="log" id="log"></div>
 
-    <p style="text-align:center;font-size:0.72em;color:#3a3020;margin-bottom:8px">updated 17:35 Mar 31</p>
+    <p style="text-align:center;font-size:0.72em;color:#3a3020;margin-bottom:8px">updated 17:44 Mar 31</p>
     <div class="footer">
       <p><a href="../">← Back to Flasher</a> · <a href="https://sagatalu.com">Saga Talu</a> · <a href="https://github.com/HaploVoss/SagaTalu">GitHub</a></p>
     </div>
@@ -362,8 +362,8 @@
           // Percentile contrast stretch — push highlights to white, darks to black
           // This matches SUMI converter behavior of polarizing toward extremes
           const sortedG = Float32Array.from(gray).sort();
-          const pLow  = sortedG[Math.floor(w*h * 0.05)];
-          const pHigh = sortedG[Math.floor(w*h * 0.95)];
+          const pLow  = sortedG[Math.floor(w*h * 0.08)];
+          const pHigh = sortedG[Math.floor(w*h * 0.94)];
           const rangeG = pHigh - pLow;
           if (rangeG > 10) {
             for (let i=0; i<w*h; i++) {
