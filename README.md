@@ -65,11 +65,21 @@ files, browse folders, download, and delete files directly from the interface.
 
 ```
 SD Card Root/
+├── books/          ← Your books (EPUB, CBZ, TXT). Subfolders are fine.
 ├── config/
-│   └── themes/  ← Home Art BMP images and .theme files
-├── notes/       ← Text notes
-└── books/       ← EPUB files
+│   ├── fonts/      ← Custom .bin fonts
+│   └── themes/     ← Home art themes (800×480 1-bit BMP) and .theme files
+├── images/         ← .bmp files for the Images app
+├── notes/          ← Notes plugin saves here
+├── sleep/          ← .bmp files for random sleep screens (480×800)
+└── .sagatalu/      ← System files, don't touch
+    ├── settings.bin
+    ├── library.bin
+    ├── recent.bin
+    └── cache/
 ```
+
+All directories are created automatically on first boot.
 
 ---
 

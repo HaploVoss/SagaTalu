@@ -86,6 +86,10 @@
 #define THUMB_WIDTH 320
 #define THUMB_HEIGHT 440
 
+// User-facing SD card directories
+#define BOOKS_DIR "/books"
+#define SLEEP_DIR "/sleep"
+
 // User configuration directory
 #define CONFIG_DIR "/config"
 #define CONFIG_THEMES_DIR CONFIG_DIR "/themes"
@@ -99,10 +103,6 @@ void applyThemeFonts();
 // Plugin System Paths
 // =============================================================================
 #if FEATURE_PLUGINS
-#define PLUGINS_CUSTOM_DIR "/custom"
 #define PLUGINS_NOTES_DIR "/notes"
-#define PLUGINS_FLASHCARDS_DIR "/flashcards"
 #define PLUGINS_IMAGES_DIR "/images"
-#define PLUGINS_MAPS_DIR "/maps"
-#define PLUGINS_GAMES_DIR "/games"
 #endif

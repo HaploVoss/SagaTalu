@@ -378,6 +378,29 @@ void showErrorScreen(const char* message) {
   renderer.displayBuffer();
 }
 
+// Create the standard SD card directory structure on first use.
+// All calls are idempotent — existing dirs are left untouched.
+static void setupDirectories() {
+  // User-facing content directories
+  SdMan.mkdir(BOOKS_DIR);
+  SdMan.mkdir(SLEEP_DIR);
+
+  // Config directories (themes + fonts)
+  SdMan.mkdir(CONFIG_DIR);
+  SdMan.mkdir(CONFIG_THEMES_DIR);
+  SdMan.mkdir(CONFIG_FONTS_DIR);
+
+  // System directory and cache (also created by SumiSettings::save, but
+  // ensure they exist before any settings operations)
+  SdMan.mkdir(SUMI_DIR);
+  SdMan.mkdir(SUMI_CACHE_DIR);
+
+#if FEATURE_PLUGINS
+  SdMan.mkdir(PLUGINS_NOTES_DIR);
+  SdMan.mkdir(PLUGINS_IMAGES_DIR);
+#endif
+}
+
 // Early initialization
 // Returns false if critical initialization failed
 bool earlyInit() {
@@ -409,6 +432,9 @@ bool earlyInit() {
     showErrorScreen("SD card error");
     return false;
   }
+
+  // Ensure the standard directory structure exists on the SD card
+  setupDirectories();
 
   // Migrate data directory to .sagatalu (one-time)
   if (SdMan.exists("/.papyrix") && !SdMan.exists("/.sagatalu")) {

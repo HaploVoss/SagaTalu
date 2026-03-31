@@ -55,7 +55,7 @@ void PluginListState::scanLuaPlugins(PluginRenderer& renderer) {
   luaRenderer_ = &renderer;
   luaPluginCount_ = 0;
 
-  File dir = SD.open(PLUGINS_CUSTOM_DIR);
+  File dir = SD.open("/custom");
   if (!dir || !dir.isDirectory()) {
     Serial.println("[LUA] No /custom directory found, skipping Lua scan");
     if (dir) dir.close();
@@ -79,7 +79,7 @@ void PluginListState::scanLuaPlugins(PluginRenderer& renderer) {
 
     // Build full path
     snprintf(luaPaths_[luaPluginCount_], sizeof(luaPaths_[0]),
-             "%s/%s", PLUGINS_CUSTOM_DIR, fname);
+             "%s/%s", "/custom", fname);
 
     // Derive display name from filename
     const char* base = fname;
