@@ -269,21 +269,24 @@
             for (let i=0; i<w*h; i++) gray[i] = (gray[i]-minG) / rangeG * 255;
           }
 
+          // Atkinson dithering - better for e-ink, produces cleaner results on high-contrast images
           const pixOut = new Uint8Array(w*h);
           for (let y=0; y<h; y++) {
             for (let x=0; x<w; x++) {
               const idx = y*w+x;
-              const old = gray[idx];
+              const old = Math.max(0, Math.min(255, gray[idx]));
               const palIdx = Math.min(3, Math.max(0, Math.round(old/85)));
               const q = palIdx * 85;
               pixOut[idx] = palIdx;
-              const err = old - q;
-              if (x+1<w) gray[idx+1] += err*7/16;
+              const err = (old - q) / 8;
+              if (x+1<w) gray[idx+1] += err;
+              if (x+2<w) gray[idx+2] += err;
               if (y+1<h) {
-                if (x>0) gray[idx+w-1] += err*3/16;
-                gray[idx+w] += err*5/16;
-                if (x+1<w) gray[idx+w+1] += err*1/16;
+                if (x>0) gray[idx+w-1] += err;
+                gray[idx+w] += err;
+                if (x+1<w) gray[idx+w+1] += err;
               }
+              if (y+2<h) gray[idx+w*2] += err;
             }
           }
 
