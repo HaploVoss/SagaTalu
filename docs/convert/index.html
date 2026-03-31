@@ -201,6 +201,103 @@
       return result;
     }
 
+    // Scale an existing 2-bit BMP to a new size, returns new 2-bit BMP
+    async function scaleBmp2bit(bmpData, targetW, targetH) {
+      try {
+        const view = new DataView(bmpData.buffer);
+        const srcW = view.getInt32(18, true);
+        const srcH = Math.abs(view.getInt32(22, true));
+        const pixOffset = view.getUint32(10, true);
+        const srcRowBytes = Math.ceil(srcW*2/32)*4;
+        const gray_vals = [0, 85, 170, 255];
+
+        // Decode source BMP to grayscale array
+        const srcGray = new Uint8Array(srcW * srcH);
+        for (let y=0; y<srcH; y++) {
+          for (let bx=0; bx<srcRowBytes; bx++) {
+            const b = bmpData[pixOffset + y*srcRowBytes + bx];
+            for (let bit=0; bit<4; bit++) {
+              const x = bx*4+bit;
+              if (x < srcW) {
+                srcGray[y*srcW+x] = gray_vals[(b>>(6-bit*2))&3];
+              }
+            }
+          }
+        }
+
+        // Scale using bilinear interpolation
+        const dstGray = new Float32Array(targetW * targetH);
+        for (let y=0; y<targetH; y++) {
+          for (let x=0; x<targetW; x++) {
+            const sx = x * (srcW-1) / (targetW-1);
+            const sy = y * (srcH-1) / (targetH-1);
+            const x0 = Math.floor(sx), y0 = Math.floor(sy);
+            const x1 = Math.min(x0+1, srcW-1), y1 = Math.min(y0+1, srcH-1);
+            const fx = sx-x0, fy = sy-y0;
+            dstGray[y*targetW+x] =
+              srcGray[y0*srcW+x0]*(1-fx)*(1-fy) +
+              srcGray[y0*srcW+x1]*fx*(1-fy) +
+              srcGray[y1*srcW+x0]*(1-fx)*fy +
+              srcGray[y1*srcW+x1]*fx*fy;
+          }
+        }
+
+        // Encode as 2-bit BMP
+        const dstRowBytes = Math.ceil(targetW*2/32)*4;
+        const pixelDataSize = dstRowBytes * targetH;
+        const fileSize = 70 + pixelDataSize;
+        const bmp = new Uint8Array(fileSize);
+        const dv = new DataView(bmp.buffer);
+        bmp[0]=0x42; bmp[1]=0x4D;
+        dv.setUint32(2, fileSize, true);
+        dv.setUint32(10, 70, true);
+        dv.setUint32(14, 40, true);
+        dv.setInt32(18, targetW, true);
+        dv.setInt32(22, -targetH, true);
+        dv.setUint16(26, 1, true);
+        dv.setUint16(28, 2, true);
+        dv.setUint32(38, 2835, true);
+        dv.setUint32(42, 2835, true);
+        dv.setUint32(46, 4, true);
+        dv.setUint32(50, 4, true);
+        const pal = [0,0,0,0, 0x55,0x55,0x55,0, 0xAA,0xAA,0xAA,0, 0xFF,0xFF,0xFF,0];
+        for (let i=0; i<16; i++) bmp[54+i]=pal[i];
+
+        // Atkinson dither
+        const pixOut = new Uint8Array(targetW*targetH);
+        for (let y=0; y<targetH; y++) {
+          for (let x=0; x<targetW; x++) {
+            const idx = y*targetW+x;
+            const old = Math.max(0, Math.min(255, dstGray[idx]));
+            const palIdx = Math.min(3, Math.max(0, Math.round(old/85)));
+            pixOut[idx] = palIdx;
+            const err = (old - palIdx*85) / 8;
+            if (x+1<targetW) dstGray[idx+1] += err;
+            if (x+2<targetW) dstGray[idx+2] += err;
+            if (y+1<targetH) {
+              if (x>0) dstGray[idx+targetW-1] += err;
+              dstGray[idx+targetW] += err;
+              if (x+1<targetW) dstGray[idx+targetW+1] += err;
+            }
+            if (y+2<targetH) dstGray[idx+targetW*2] += err;
+          }
+        }
+
+        for (let y=0; y<targetH; y++) {
+          for (let byteX=0; byteX<dstRowBytes; byteX++) {
+            let byte = 0;
+            for (let bit=0; bit<4; bit++) {
+              const x = byteX*4+bit;
+              const pix = x<targetW ? pixOut[y*targetW+x] : 3;
+              byte |= (pix&3) << (6-bit*2);
+            }
+            bmp[70 + y*dstRowBytes + byteX] = byte;
+          }
+        }
+        return bmp;
+      } catch(e) { return null; }
+    }
+
     // Convert image to 2-bit BMP matching device format exactly
     // Palette: 00000000, 55555500, aaaaaa00, ffffff00
     async function imageTo2BitBmp(data, opts) {
@@ -366,16 +463,19 @@
         outZip.file(path, content);
       }
 
-      // Add sumi-cover.bmp — device prioritizes this over cover.bmp
-      const coverEntry = Object.entries(zip.files).find(([p]) =>
-        p.toLowerCase().replace(/\.(jpg|jpeg|png|gif|webp)$/, '.bmp') === 'cover.bmp' ||
+      // Add sumi-cover.bmp and sumi-thumb.bmp — device prioritizes these
+      const coverKey = Object.keys(outZip.files).find(p =>
         p.toLowerCase() === 'cover.bmp');
-      if (coverEntry) {
-        const coverBmpPath = coverEntry[0].toLowerCase().replace(/\.(jpg|jpeg|png|gif|webp)$/, '.bmp');
-        if (outZip.files[coverBmpPath]) {
-          const coverData = await outZip.files[coverBmpPath].async('uint8array');
-          outZip.file('sumi-cover.bmp', coverData);
-          log('  Added sumi-cover.bmp for device compatibility', 'ok');
+      if (coverKey) {
+        const coverData = await outZip.files[coverKey].async('uint8array');
+        outZip.file('sumi-cover.bmp', coverData);
+        log('  Added sumi-cover.bmp for device compatibility', 'ok');
+
+        // Generate sumi-thumb.bmp at 271x440 (device thumbnail size)
+        const thumbBmp = await scaleBmp2bit(coverData, 271, 440);
+        if (thumbBmp) {
+          outZip.file('sumi-thumb.bmp', thumbBmp);
+          log('  Added sumi-thumb.bmp for home screen thumbnail', 'ok');
         }
       }
       log(`  Images converted: ${imagesConverted}  Files removed: ${skipped}`, 'ok');
