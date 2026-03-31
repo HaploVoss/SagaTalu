@@ -289,30 +289,51 @@ void WifiTransfer::handleFileList() {
   String path = "/";
   if (server_->hasArg("path")) path = server_->arg("path");
 
-  String json = "[";
-  bool first = true;
   FsFile dir = SdMan.open(path.c_str());
-  if (dir && dir.isDirectory()) {
-    FsFile entry = dir.openNextFile();
-    while (entry) {
-      char nameBuf[64];
-      entry.getName(nameBuf, sizeof(nameBuf));
-      String name = String(nameBuf);
-      // Skip hidden system folders
-      if (!first) json += ",";
-      if (entry.isDirectory()) {
-        json += "{\"name\":\"" + name + "\",\"isDir\":true,\"size\":0}";
-      } else {
-        json += "{\"name\":\"" + name + "\",\"isDir\":false,\"size\":" + entry.fileSize() + "}";
-      }
-      first = false;
-      entry.close();
-      entry = dir.openNextFile();
-    }
-    dir.close();
+  if (!dir || !dir.isDirectory()) {
+    server_->send(200, "application/json", "[]");
+    return;
   }
-  json += "]";
-  server_->send(200, "application/json", json);
+
+  auto jsonEscape = [](const char* s) -> String {
+    String out;
+    while (*s) {
+      if (*s == '"') out += "\\\"";
+      else if (*s == '\\') out += "\\\\";
+      else if (*s == '\n') out += "\\n";
+      else if (*s == '\r') out += "\\r";
+      else if (*s == '\t') out += "\\t";
+      else out += *s;
+      s++;
+    }
+    return out;
+  };
+
+  // Stream response directly to client to avoid memory limits
+  WiFiClient client = server_->client();
+  String header = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nConnection: close\r\n\r\n";
+  client.print(header);
+  client.print("[");
+  bool first = true;
+  FsFile entry = dir.openNextFile();
+  while (entry) {
+    char nameBuf[256];
+    entry.getName(nameBuf, sizeof(nameBuf));
+    String name = jsonEscape(nameBuf);
+    String chunk = first ? "" : ",";
+    if (entry.isDirectory()) {
+      chunk += "{\"name\":\"" + name + "\",\"isDir\":true,\"size\":0}";
+    } else {
+      chunk += "{\"name\":\"" + name + "\",\"isDir\":false,\"size\":" + String(entry.fileSize()) + "}";
+    }
+    client.print(chunk);
+    first = false;
+    entry.close();
+    entry = dir.openNextFile();
+  }
+  dir.close();
+  client.print("]");
+  client.stop();
 }
 
 void WifiTransfer::handleDelete() {

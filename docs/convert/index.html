@@ -261,6 +261,14 @@
             gray[i] = 0.299*pixels[i*4] + 0.587*pixels[i*4+1] + 0.114*pixels[i*4+2];
           }
 
+          // Auto-contrast: stretch histogram to full 0-255 range
+          let minG = 255, maxG = 0;
+          for (let i=0; i<w*h; i++) { if (gray[i]<minG) minG=gray[i]; if (gray[i]>maxG) maxG=gray[i]; }
+          const rangeG = maxG - minG;
+          if (rangeG > 10) {
+            for (let i=0; i<w*h; i++) gray[i] = (gray[i]-minG) / rangeG * 255;
+          }
+
           const pixOut = new Uint8Array(w*h);
           for (let y=0; y<h; y++) {
             for (let x=0; x<w; x++) {
@@ -347,6 +355,18 @@
         outZip.file(path, content);
       }
 
+      // Add sumi-cover.bmp — device prioritizes this over cover.bmp
+      const coverEntry = Object.entries(zip.files).find(([p]) =>
+        p.toLowerCase().replace(/\.(jpg|jpeg|png|gif|webp)$/, '.bmp') === 'cover.bmp' ||
+        p.toLowerCase() === 'cover.bmp');
+      if (coverEntry) {
+        const coverBmpPath = coverEntry[0].toLowerCase().replace(/\.(jpg|jpeg|png|gif|webp)$/, '.bmp');
+        if (outZip.files[coverBmpPath]) {
+          const coverData = await outZip.files[coverBmpPath].async('uint8array');
+          outZip.file('sumi-cover.bmp', coverData);
+          log('  Added sumi-cover.bmp for device compatibility', 'ok');
+        }
+      }
       log(`  Images converted: ${imagesConverted}  Files removed: ${skipped}`, 'ok');
 
       const outBlob = await outZip.generateAsync({type:'blob', compression:'DEFLATE', compressionOptions:{level:6}});
