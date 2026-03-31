@@ -271,6 +271,11 @@
               gray[i] = Math.max(0, Math.min(255, (gray[i]-pLow) / rangeG * 255));
             }
           }
+          // Gamma correction to brighten midtones (e-ink looks better with brighter mids)
+          const gamma = 0.7;
+          for (let i=0; i<w*h; i++) {
+            gray[i] = Math.pow(gray[i]/255, gamma) * 255;
+          }
 
           // Atkinson dithering - better for e-ink, produces cleaner results on high-contrast images
           const pixOut = new Uint8Array(w*h);
