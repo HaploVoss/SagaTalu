@@ -1337,7 +1337,17 @@ ReaderState::Viewport ReaderState::getReaderViewport() const {
 
 bool ReaderState::renderCoverPage(Core& core) {
   Serial.printf("[%lu] [RDR] Generating cover for reader...\n", millis());
-  std::string coverPath = core.content.generateCover(true);  // Always 1-bit in reader (saves ~48KB grayscale buffer)
+  // Release memory arena to free heap for JPEG decode buffers (~150KB needed)
+  bool arenaWasInit = sumi::MemoryArena::isInitialized();
+  if (arenaWasInit) {
+    sumi::MemoryArena::release();
+    Serial.printf("[%lu] [RDR] Arena released for cover gen. Free heap: %u\n", millis(), ESP.getFreeHeap());
+  }
+  std::string coverPath = core.content.generateCover(true);
+  if (arenaWasInit && !sumi::MemoryArena::isInitialized()) {
+    sumi::MemoryArena::init();
+    Serial.printf("[%lu] [RDR] Arena restored after cover gen\n", millis());
+  }
   if (coverPath.empty()) {
     Serial.printf("[%lu] [RDR] No cover available, skipping cover page\n", millis());
     return false;

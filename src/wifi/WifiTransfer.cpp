@@ -26,6 +26,7 @@ static const char UPLOAD_HTML[] PROGMEM = R"rawhtml(
   .ok{background:#d4edda;color:#155724}
   .err{background:#f8d7da;color:#721c24}
   .prog{background:#d1ecf1;color:#0c5460}
+  .warn{background:#fff3cd;color:#856404}
   table{width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden}
   th{background:#e9ecef;padding:10px 12px;text-align:left;font-size:0.9em}
   td{padding:9px 12px;border-top:1px solid #eee;font-size:0.9em}
@@ -119,7 +120,9 @@ async function navigate(path) {
 }
 
 async function uploadFiles(files) {
+  let hasEpub = false;
   for (const f of files) {
+    if (f.name.toLowerCase().endsWith('.epub')) hasEpub = true;
     showStatus('Uploading ' + f.name + '...', 'prog');
     const fd = new FormData();
     fd.append('file', f, f.name);
@@ -132,6 +135,9 @@ async function uploadFiles(files) {
     } catch(e) {
       showStatus('Upload failed: ' + e, 'err');
     }
+  }
+  if (hasEpub) {
+    showStatus('Tip: For cover art and inline images, optimize EPUBs first at haplovoss.github.io/SagaTalu/convert/', 'warn');
   }
   navigate(currentPath);
 }
@@ -293,15 +299,13 @@ void WifiTransfer::handleFileList() {
       entry.getName(nameBuf, sizeof(nameBuf));
       String name = String(nameBuf);
       // Skip hidden system folders
-      if (!name.startsWith(".")) {
-        if (!first) json += ",";
-        if (entry.isDirectory()) {
-          json += "{\"name\":\"" + name + "\",\"isDir\":true,\"size\":0}";
-        } else {
-          json += "{\"name\":\"" + name + "\",\"isDir\":false,\"size\":" + entry.fileSize() + "}";
-        }
-        first = false;
+      if (!first) json += ",";
+      if (entry.isDirectory()) {
+        json += "{\"name\":\"" + name + "\",\"isDir\":true,\"size\":0}";
+      } else {
+        json += "{\"name\":\"" + name + "\",\"isDir\":false,\"size\":" + entry.fileSize() + "}";
       }
+      first = false;
       entry.close();
       entry = dir.openNextFile();
     }
