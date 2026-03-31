@@ -353,61 +353,55 @@
                        0xAA,0xAA,0xAA,0x00, 0xFF,0xFF,0xFF,0x00];
           for (let i=0; i<16; i++) bmp[54+i] = pal[i];
 
-          // Floyd-Steinberg dithering to 4 levels
+          // Grayscale conversion
           const gray = new Float32Array(w*h);
           for (let i=0; i<w*h; i++) {
             gray[i] = 0.299*pixels[i*4] + 0.587*pixels[i*4+1] + 0.114*pixels[i*4+2];
           }
 
-          // Auto-contrast using percentile stretch (ignore top/bottom 1% outliers)
-          const sortedGray = Float32Array.from(gray).sort();
-          const pLow  = sortedGray[Math.floor(w*h * 0.01)];
-          const pHigh = sortedGray[Math.floor(w*h * 0.99)];
-          const rangeG = pHigh - pLow;
-          if (rangeG > 10) {
-            for (let i=0; i<w*h; i++) {
-              gray[i] = Math.max(0, Math.min(255, (gray[i]-pLow) / rangeG * 255));
-            }
-          }
-          // Gamma correction to brighten midtones (e-ink looks better with brighter mids)
-          const gamma = 0.7;
-          for (let i=0; i<w*h; i++) {
-            gray[i] = Math.pow(gray[i]/255, gamma) * 255;
-          }
+          // Atkinson dithering matching firmware BitmapHelpers.h AtkinsonDitherer exactly
+          // Thresholds tuned for Xteink X4 e-ink display
+          const PADDING = 4;
+          const allocW = w + PADDING * 2;
+          const errRow0 = new Float32Array(allocW);
+          const errRow1 = new Float32Array(allocW);
+          const errRow2 = new Float32Array(allocW);
+          const OFF = PADDING;
 
-          // Atkinson dithering - better for e-ink, produces cleaner results on high-contrast images
-          const pixOut = new Uint8Array(w*h);
           for (let y=0; y<h; y++) {
+            const rowOffset = 70 + y * bytesPerRow;
+            for (let b=0; b<bytesPerRow; b++) bmp[rowOffset+b] = 0;
+
             for (let x=0; x<w; x++) {
-              const idx = y*w+x;
-              const old = Math.max(0, Math.min(255, gray[idx]));
-              const palIdx = Math.min(3, Math.max(0, Math.round(old/85)));
-              const q = palIdx * 85;
-              pixOut[idx] = palIdx;
-              const err = (old - q) / 8;
-              if (x+1<w) gray[idx+1] += err;
-              if (x+2<w) gray[idx+2] += err;
-              if (y+1<h) {
-                if (x>0) gray[idx+w-1] += err;
-                gray[idx+w] += err;
-                if (x+1<w) gray[idx+w+1] += err;
-              }
-              if (y+2<h) gray[idx+w*2] += err;
-            }
-          }
+              let adjusted = gray[y*w+x] + errRow0[x+OFF];
+              if (adjusted < 0) adjusted = 0;
+              if (adjusted > 255) adjusted = 255;
 
-          // Pack 4 pixels per byte, MSB first
-          const dataOffset = 70;
-          for (let y=0; y<h; y++) {
-            for (let byteX=0; byteX<bytesPerRow; byteX++) {
-              let byte = 0;
-              for (let bit=0; bit<4; bit++) {
-                const x = byteX*4+bit;
-                const pix = x<w ? pixOut[y*w+x] : 3;
-                byte |= (pix&0x3) << (6-bit*2);
-              }
-              bmp[dataOffset + y*bytesPerRow + byteX] = byte;
+              // Quantize with firmware-matching thresholds
+              let quantized, quantizedValue;
+              if (adjusted < 30)       { quantized = 0; quantizedValue = 15; }
+              else if (adjusted < 50)  { quantized = 1; quantizedValue = 30; }
+              else if (adjusted < 140) { quantized = 2; quantizedValue = 80; }
+              else                     { quantized = 3; quantizedValue = 210; }
+
+              // Pack 2-bit pixel MSB first
+              const byteIdx = x >>> 2;
+              const bitShift = 6 - (x & 3) * 2;
+              bmp[rowOffset + byteIdx] |= (quantized << bitShift);
+
+              // Distribute error (Atkinson: 6 neighbours, 1/8 each)
+              const error = (adjusted - quantizedValue) / 8;
+              errRow0[x+OFF+1] += error;
+              errRow0[x+OFF+2] += error;
+              errRow1[x+OFF-1] += error;
+              errRow1[x+OFF]   += error;
+              errRow1[x+OFF+1] += error;
+              errRow2[x+OFF]   += error;
             }
+            // Rotate error rows
+            errRow0.set(errRow1);
+            errRow1.set(errRow2);
+            errRow2.fill(0);
           }
 
           resolve(bmp);
