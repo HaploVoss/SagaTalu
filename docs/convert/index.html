@@ -261,12 +261,15 @@
             gray[i] = 0.299*pixels[i*4] + 0.587*pixels[i*4+1] + 0.114*pixels[i*4+2];
           }
 
-          // Auto-contrast: stretch histogram to full 0-255 range
-          let minG = 255, maxG = 0;
-          for (let i=0; i<w*h; i++) { if (gray[i]<minG) minG=gray[i]; if (gray[i]>maxG) maxG=gray[i]; }
-          const rangeG = maxG - minG;
+          // Auto-contrast using percentile stretch (ignore top/bottom 1% outliers)
+          const sortedGray = Float32Array.from(gray).sort();
+          const pLow  = sortedGray[Math.floor(w*h * 0.01)];
+          const pHigh = sortedGray[Math.floor(w*h * 0.99)];
+          const rangeG = pHigh - pLow;
           if (rangeG > 10) {
-            for (let i=0; i<w*h; i++) gray[i] = (gray[i]-minG) / rangeG * 255;
+            for (let i=0; i<w*h; i++) {
+              gray[i] = Math.max(0, Math.min(255, (gray[i]-pLow) / rangeG * 255));
+            }
           }
 
           // Atkinson dithering - better for e-ink, produces cleaner results on high-contrast images
