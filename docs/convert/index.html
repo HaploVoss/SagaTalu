@@ -89,7 +89,7 @@
 
     <div class="log" id="log"></div>
 
-    <p style="text-align:center;font-size:0.72em;color:#3a3020;margin-bottom:8px">updated 17:44 Mar 31</p>
+    <p style="text-align:center;font-size:0.72em;color:#3a3020;margin-bottom:8px">updated 17:57 Mar 31</p>
     <div class="footer">
       <p><a href="../">← Back to Flasher</a> · <a href="https://sagatalu.com">Saga Talu</a> · <a href="https://github.com/HaploVoss/SagaTalu">GitHub</a></p>
     </div>
@@ -367,7 +367,14 @@
           const rangeG = pHigh - pLow;
           if (rangeG > 10) {
             for (let i=0; i<w*h; i++) {
-              gray[i] = Math.max(0, Math.min(255, (gray[i]-pLow) / rangeG * 255));
+              let v = Math.max(0, Math.min(255, (gray[i]-pLow) / rangeG * 255));
+              // S-curve: push darks darker, lights lighter
+              // Increases contrast around midpoint to match SUMI's near-binary output
+              v = v / 255;
+              v = v < 0.5
+                ? 2 * v * v
+                : 1 - Math.pow(-2 * v + 2, 2) / 2;
+              gray[i] = v * 255;
             }
           }
 
