@@ -112,6 +112,8 @@ void SettingsState::exit(Core& core) {
 StateTransition SettingsState::update(Core& core) {
   Event e;
   while (core.events.pop(e)) {
+    // WiFi setup handles all its own input in updateWifiSetup()
+    if (currentScreen_ == SettingsScreen::WifiSetup) continue;
     switch (e.type) {
       case EventType::ButtonPress:
         switch (e.button) {
@@ -152,23 +154,6 @@ StateTransition SettingsState::update(Core& core) {
                 if (wifiSetupScreen_ == WifiSetupScreen::NetworkList) {
                   if (wifiNetworkSelected_ > 0) wifiNetworkSelected_--;
                   wifiSetupNeedsRender_ = true;
-                } else if (wifiSetupScreen_ == WifiSetupScreen::PasswordEntry) {
-                  if (wifiPasswordLen_ > 0) {
-                    char& c = wifiPasswordBuf_[wifiPasswordLen_ - 1];
-                    if (c >= 'a' && c < 'z') c++;
-                    else if (c == 'z') c = 'A';
-                    else if (c >= 'A' && c < 'Z') c++;
-                    else if (c == 'Z') c = '0';
-                    else if (c >= '0' && c < '9') c++;
-                    else if (c == '9') c = '!';
-                    else if (c == '!') c = '@';
-                    else if (c == '@') c = '#';
-                    else if (c == '#') c = '_';
-                    else if (c == '_') c = '-';
-                    else if (c == '-') c = '.';
-                    else c = 'a';
-                    wifiSetupNeedsRender_ = true;
-                  }
                 }
                 break;
               default:
@@ -176,7 +161,7 @@ StateTransition SettingsState::update(Core& core) {
             }
             needsRender_ = true;
             break;
-            case Button::Down:
+          case Button::Down:
             switch (currentScreen_) {
               case SettingsScreen::Menu:
                 menuView_.moveDown();
@@ -210,27 +195,6 @@ StateTransition SettingsState::update(Core& core) {
                 break;
 #endif
               case SettingsScreen::WifiSetup:
-                if (wifiSetupScreen_ == WifiSetupScreen::NetworkList) {
-                  if (wifiNetworkSelected_ < wifiNetworkCount_ - 1) wifiNetworkSelected_++;
-                  wifiSetupNeedsRender_ = true;
-                } else if (wifiSetupScreen_ == WifiSetupScreen::PasswordEntry) {
-                  if (wifiPasswordLen_ > 0) {
-                    char& c = wifiPasswordBuf_[wifiPasswordLen_ - 1];
-                    if (c > 'a' && c <= 'z') c--;
-                    else if (c == 'a') c = '.';
-                    else if (c == '.') c = '-';
-                    else if (c == '-') c = '_';
-                    else if (c == '_') c = '#';
-                    else if (c == '#') c = '@';
-                    else if (c == '@') c = '!';
-                    else if (c == '!') c = '9';
-                    else if (c > '0' && c <= '9') c--;
-                    else if (c == '0') c = 'Z';
-                    else if (c > 'A' && c <= 'Z') c--;
-                    else c = 'z';
-                    wifiSetupNeedsRender_ = true;
-                  }
-                }
                 break;
               default:
                 break;
@@ -305,13 +269,6 @@ StateTransition SettingsState::update(Core& core) {
                 break;
 #endif
               case SettingsScreen::WifiSetup:
-                if (wifiSetupScreen_ == WifiSetupScreen::PasswordEntry) {
-                  if (wifiPasswordLen_ < 63) {
-                    wifiPasswordBuf_[wifiPasswordLen_++] = 'a';
-                    wifiPasswordBuf_[wifiPasswordLen_] = '\0';
-                    wifiSetupNeedsRender_ = true;
-                  }
-                }
                 break;
               default:
                 break;
@@ -655,9 +612,7 @@ void SettingsState::handleConfirm(Core& core) {
         wifiPasswordLen_ = 0;
         wifiPasswordBuf_[0] = '\0';
         if (wifiNetworks_[wifiNetworkSelected_].encrypted) {
-          wifiPasswordBuf_[0] = 'a';
-          wifiPasswordLen_ = 1;
-          wifiPasswordBuf_[1] = '\0';
+          kbRow_ = 0; kbCol_ = 0; kbShift_ = false; kbNumbers_ = false;
           wifiSetupScreen_ = WifiSetupScreen::PasswordEntry;
         } else {
           wifiSetupScreen_ = WifiSetupScreen::Connecting;
@@ -2103,59 +2058,50 @@ void SettingsState::updateWifiSetup() {
 
     } else if (wifiSetupScreen_ == WifiSetupScreen::PasswordEntry) {
       switch (e.button) {
-        case Button::Up: {
-          if (wifiPasswordLen_ > 0) {
-            char& c = wifiPasswordBuf_[wifiPasswordLen_ - 1];
-            if (c >= 'a' && c < 'z') c++;
-            else if (c == 'z') c = 'A';
-            else if (c >= 'A' && c < 'Z') c++;
-            else if (c == 'Z') c = '0';
-            else if (c >= '0' && c < '9') c++;
-            else if (c == '9') c = '!';
-            else if (c == '!') c = '@';
-            else if (c == '@') c = '#';
-            else if (c == '#') c = '_';
-            else if (c == '_') c = '-';
-            else if (c == '-') c = '.';
-            else c = 'a';
-            wifiSetupNeedsRender_ = true;
-          }
+        case Button::Up:
+          if (kbRow_ > 0) { kbRow_--; if (kbCol_ >= kbRowLen(kbRow_)) kbCol_ = kbRowLen(kbRow_)-1; }
+          wifiSetupNeedsRender_ = true;
           break;
-        }
-        case Button::Down: {
-          if (wifiPasswordLen_ > 0) {
-            char& c = wifiPasswordBuf_[wifiPasswordLen_ - 1];
-            if (c > 'a' && c <= 'z') c--;
-            else if (c == 'a') c = '.';
-            else if (c == '.') c = '-';
-            else if (c == '-') c = '_';
-            else if (c == '_') c = '#';
-            else if (c == '#') c = '@';
-            else if (c == '@') c = '!';
-            else if (c == '!') c = '9';
-            else if (c > '0' && c <= '9') c--;
-            else if (c == '0') c = 'Z';
-            else if (c > 'A' && c <= 'Z') c--;
-            else c = 'z';
-            wifiSetupNeedsRender_ = true;
-          }
-          break;
-        }
-        case Button::Right:
-          if (wifiPasswordLen_ < 63) {
-            wifiPasswordBuf_[wifiPasswordLen_++] = 'a';
-            wifiPasswordBuf_[wifiPasswordLen_] = '\0';
-            wifiSetupNeedsRender_ = true;
-          }
+        case Button::Down:
+          if (kbRow_ < 3) { kbRow_++; if (kbCol_ >= kbRowLen(kbRow_)) kbCol_ = kbRowLen(kbRow_)-1; }
+          wifiSetupNeedsRender_ = true;
           break;
         case Button::Left:
-          if (wifiPasswordLen_ > 0) {
-            wifiPasswordBuf_[--wifiPasswordLen_] = '\0';
-            wifiSetupNeedsRender_ = true;
-          }
+          if (kbCol_ > 0) kbCol_--;
+          else if (kbRow_ > 0) { kbRow_--; kbCol_ = kbRowLen(kbRow_)-1; }
+          wifiSetupNeedsRender_ = true;
+          break;
+        case Button::Right:
+          if (kbCol_ < kbRowLen(kbRow_)-1) kbCol_++;
+          else if (kbRow_ < 3) { kbRow_++; kbCol_ = 0; }
+          wifiSetupNeedsRender_ = true;
           break;
         case Button::Center:
-          wifiSetupScreen_ = WifiSetupScreen::Connecting;
+          if (kbRow_ == 3) {
+            switch (kbCol_) {
+              case 0: kbShift_ = !kbShift_; break;
+              case 1: kbNumbers_ = !kbNumbers_; kbCol_ = 0; break;
+              case 2:
+                if (wifiPasswordLen_ < 63) { wifiPasswordBuf_[wifiPasswordLen_++] = ' '; wifiPasswordBuf_[wifiPasswordLen_] = '\0'; }
+                break;
+              case 3:
+                if (wifiPasswordLen_ > 0) wifiPasswordBuf_[--wifiPasswordLen_] = '\0';
+                break;
+              case 4:
+                wifiSetupScreen_ = WifiSetupScreen::Connecting;
+                break;
+            }
+          } else {
+            static const char* lower[] = {"qwertyuiop","asdfghjkl","zxcvbnm"};
+            static const char* upper[] = {"QWERTYUIOP","ASDFGHJKL","ZXCVBNM"};
+            static const char* nums[]  = {"1234567890","!@#$%^&*().","-_=+,.?/"};
+            const char* row = kbNumbers_ ? nums[kbRow_] : (kbShift_ ? upper[kbRow_] : lower[kbRow_]);
+            if (wifiPasswordLen_ < 63) {
+              wifiPasswordBuf_[wifiPasswordLen_++] = row[kbCol_];
+              wifiPasswordBuf_[wifiPasswordLen_] = '\0';
+              if (kbShift_) kbShift_ = false;
+            }
+          }
           wifiSetupNeedsRender_ = true;
           break;
         case Button::Back:
@@ -2196,6 +2142,13 @@ void SettingsState::updateWifiSetup() {
     WiFi.mode(WIFI_OFF);
     wifiSetupNeedsRender_ = true;
   }
+}
+
+int SettingsState::kbRowLen(int row) const {
+  if (row == 3) return 5;
+  static const char* lower[] = {"qwertyuiop","asdfghjkl","zxcvbnm"};
+  static const char* nums[]  = {"1234567890","!@#$%^&*()","-_=+,.?/"};
+  return strlen(kbNumbers_ ? nums[row] : lower[row]);
 }
 
 void SettingsState::renderWifiSetup() {
@@ -2246,30 +2199,76 @@ void SettingsState::renderWifiSetup() {
       break;
 
     case WifiSetupScreen::PasswordEntry: {
+      // Network name
       renderer_.drawCenteredText(t.menuFontId, y,
         wifiNetworks_[wifiNetworkSelected_].ssid,
         t.primaryTextBlack, EpdFontFamily::BOLD);
-      y += 56;
-      renderer_.drawCenteredText(t.menuFontId, y,
-        "Enter password:", t.secondaryTextBlack);
-      y += 56;
-      int fw = 380, fh = 52;
+      y += 44;
+
+      // Password field
+      int fw = 420, fh = 44;
       int fx = (renderer_.getScreenWidth() - fw) / 2;
       renderer_.drawRect(fx, y, fw, fh, t.primaryTextBlack);
       renderer_.drawRect(fx+1, y+1, fw-2, fh-2, t.primaryTextBlack);
       char display[66];
       strncpy(display, wifiPasswordBuf_, 64);
-      display[64] = '\0';
       display[wifiPasswordLen_] = '_';
       display[wifiPasswordLen_ + 1] = '\0';
-      renderer_.drawCenteredText(t.menuFontId, y + 14, display, t.primaryTextBlack);
-      y += fh + 40;
-      renderer_.drawCenteredText(t.uiFontId, y,
-        "Up/Down: change char   Right: add   Left: delete",
-        t.secondaryTextBlack);
-      y += 32;
-      renderer_.drawCenteredText(t.uiFontId, y,
-        "OK: confirm   Back: cancel", t.secondaryTextBlack);
+      renderer_.drawCenteredText(t.menuFontId, y + 8, display, t.primaryTextBlack);
+      y += fh + 12;
+
+      // Keyboard rows
+      static const char* kbLower[] = {"qwertyuiop","asdfghjkl","zxcvbnm"};
+      static const char* kbUpper[] = {"QWERTYUIOP","ASDFGHJKL","ZXCVBNM"};
+      static const char* kbNums[]  = {"1234567890","!@#$%^&*().","-_=+,.?/"};
+      const char** kbRows = kbNumbers_ ? kbNums : (kbShift_ ? kbUpper : kbLower);
+
+      const int keyH = 48;
+      const int keyGap = 3;
+      const int screenW = renderer_.getScreenWidth();
+      const int margin = 10;
+
+      for (int row = 0; row < 3; row++) {
+        const char* rowStr = kbRows[row];
+        int nKeys = strlen(rowStr);
+        int totalGap = keyGap * (nKeys - 1);
+        int keyW = (screenW - margin*2 - totalGap) / nKeys;
+        int rowX = (screenW - (keyW*nKeys + totalGap)) / 2;
+        for (int col = 0; col < nKeys; col++) {
+          int kx = rowX + col*(keyW+keyGap);
+          bool sel = (kbRow_ == row && kbCol_ == col);
+          if (sel) renderer_.fillRect(kx, y, keyW, keyH, t.primaryTextBlack);
+          else     renderer_.drawRect(kx, y, keyW, keyH, t.primaryTextBlack);
+          char label[2] = {rowStr[col], '\0'};
+          int tw = renderer_.getTextWidth(t.menuFontId, label);
+          int tx = kx + (keyW - tw) / 2;
+          renderer_.drawText(t.menuFontId, tx, y + 10, label,
+            sel ? !t.primaryTextBlack : t.primaryTextBlack);
+        }
+        y += keyH + keyGap;
+      }
+
+      // Special row: SHIFT / 123 / SPC / DEL / OK
+      y += 4;
+      const int nSpec = 5;
+      const int specGap = keyGap;
+      int specW = (screenW - margin*2 - specGap*(nSpec-1)) / nSpec;
+      int specX = (screenW - (specW*nSpec + specGap*(nSpec-1))) / 2;
+      const char* specLabels[] = {
+        kbShift_ ? "SHFT" : "shft",
+        kbNumbers_ ? "abc" : "123",
+        "spc", "del", "OK"
+      };
+      for (int col = 0; col < nSpec; col++) {
+        int kx = specX + col*(specW+specGap);
+        bool sel = (kbRow_ == 3 && kbCol_ == col);
+        if (sel) renderer_.fillRect(kx, y, specW, keyH, t.primaryTextBlack);
+        else     renderer_.drawRect(kx, y, specW, keyH, t.primaryTextBlack);
+        int tw = renderer_.getTextWidth(t.uiFontId, specLabels[col]);
+        int tx = kx + (specW - tw) / 2;
+        renderer_.drawText(t.uiFontId, tx, y + 12, specLabels[col],
+          sel ? !t.primaryTextBlack : t.primaryTextBlack);
+      }
       break;
     }
 
