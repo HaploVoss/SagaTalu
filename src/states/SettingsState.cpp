@@ -110,10 +110,19 @@ void SettingsState::exit(Core& core) {
 }
 
 StateTransition SettingsState::update(Core& core) {
+  if (currentScreen_ == SettingsScreen::WifiSetup) {
+    updateWifiSetup();
+    if (currentScreen_ != SettingsScreen::WifiSetup) {
+      return StateTransition::stay(StateId::Settings);
+    }
+    if (goHome_) {
+      goHome_ = false;
+      return StateTransition::to(StateId::Home);
+    }
+    return StateTransition::stay(StateId::Settings);
+  }
   Event e;
   while (core.events.pop(e)) {
-    // WiFi setup handles all its own input in updateWifiSetup()
-    if (currentScreen_ == SettingsScreen::WifiSetup) continue;
     switch (e.type) {
       case EventType::ButtonPress:
         switch (e.button) {
@@ -298,10 +307,10 @@ StateTransition SettingsState::update(Core& core) {
         }
         break;
 
-      default:
+       default:
         break;
     }
-  }
+  
 
 #if FEATURE_PLUGINS
   if (goApps_) {
@@ -319,12 +328,6 @@ StateTransition SettingsState::update(Core& core) {
     return StateTransition::to(StateId::PluginHost);
   }
 #endif
-if (currentScreen_ == SettingsScreen::WifiSetup) {
-    updateWifiSetup();
-    if (currentScreen_ != SettingsScreen::WifiSetup) {
-      return StateTransition::stay(StateId::Settings);
-    }
-  }
   if (goHome_) {
     goHome_ = false;
     return StateTransition::to(StateId::Home);
@@ -1008,7 +1011,7 @@ void SettingsState::loadHomeArtSettings() {
         if (len > 4 && strcasecmp(filename + len - 4, ".bmp") == 0) {
           // Extract theme name (filename without extension)
           char themeName[32];
-          size_t nameLen = std::min(len - 4, sizeof(themeName) - 1);
+          size_t nameLen = (len - 4 < sizeof(themeName) - 1) ? len - 4 : sizeof(themeName) - 1;
           strncpy(themeName, filename, nameLen);
           themeName[nameLen] = '\0';
           
@@ -2005,7 +2008,7 @@ void SettingsState::updateWifiSetup() {
       wifiNetworkCount_ = 0;
       wifiSetupScreen_ = WifiSetupScreen::NetworkList;
     } else {
-      wifiNetworkCount_ = min(n, MAX_WIFI_NETWORKS);
+        wifiNetworkCount_ = (n < MAX_WIFI_NETWORKS) ? n : MAX_WIFI_NETWORKS;
       for (int i = 0; i < wifiNetworkCount_; i++) {
         strncpy(wifiNetworks_[i].ssid, WiFi.SSID(i).c_str(), 32);
         wifiNetworks_[i].ssid[32] = '\0';
