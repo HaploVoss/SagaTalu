@@ -10,6 +10,8 @@
 
 #include "PluginHostState.h"
 
+
+
 class GfxRenderer;
 
 namespace sumi {
@@ -143,6 +145,12 @@ class SettingsState : public State {
   int wifiNetworkSelected_ = 0;
   char wifiPasswordBuf_[64] = {0};
   int wifiPasswordLen_ = 0;
+  // On-screen keyboard state
+  int kbRow_ = 0;
+  int kbCol_ = 0;
+  bool kbShift_ = false;
+  bool kbNumbers_ = false;
+  int kbRowLen(int row) const;
   bool wifiSetupNeedsRender_ = false;
 
 #if FEATURE_BLUETOOTH

@@ -310,7 +310,7 @@ StateTransition SettingsState::update(Core& core) {
        default:
         break;
     }
-  
+  }
 
 #if FEATURE_PLUGINS
   if (goApps_) {

@@ -8,38 +8,46 @@ static const char UPLOAD_HTML[] PROGMEM = R"rawhtml(
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Saga Talu File Transfer</title>
 <style>
-  body{font-family:sans-serif;max-width:700px;margin:40px auto;padding:0 20px;background:#f5f5f5}
-  h1{color:#333;font-size:1.4em;margin-bottom:4px}
-  .path{color:#666;font-size:0.9em;margin-bottom:16px;word-break:break-all}
-  .path a{color:#007bff;text-decoration:none}
-  .path a:hover{text-decoration:underline}
-  .drop{border:3px dashed #aaa;border-radius:12px;padding:30px;text-align:center;background:#fff;margin:16px 0;cursor:pointer}
-  .drop.over{border-color:#007bff;background:#e8f0ff}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Georgia,'Times New Roman',serif;max-width:700px;margin:40px auto;padding:0 20px;background:#0d0d0d;color:#c8b97a}
+  h1{color:#d4a94a;font-size:1.5em;font-weight:400;letter-spacing:0.08em;margin-bottom:4px}
+  .subtitle{color:#5a4a20;font-size:0.8em;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:20px}
+  .path{color:#7a6030;font-size:0.88em;margin-bottom:16px;word-break:break-all}
+  .path a{color:#c8a840;text-decoration:none}
+  .path a:hover{color:#e0c060}
+  .drop{border:1px dashed #2a2415;border-radius:10px;padding:28px;text-align:center;background:#161616;margin:16px 0;cursor:pointer;transition:border-color 0.2s}
+  .drop:hover,.drop.over{border-color:#c8a840}
+  .drop p{color:#a08040;font-size:0.95em}
+  .drop small{color:#5a4a20;font-size:0.82em}
   input[type=file]{display:none}
-  button{background:#007bff;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:0.95em}
-  button:hover{background:#0056b3}
-  .btn-sm{padding:4px 10px;font-size:0.85em}
-  .btn-del{background:#dc3545}.btn-del:hover{background:#a71d2a}
-  .btn-dl{background:#28a745;color:#fff;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.85em;display:inline-block}
-  .btn-dl:hover{background:#1e7e34}
-  #status{margin:12px 0;padding:10px;border-radius:6px;display:none}
-  .ok{background:#d4edda;color:#155724}
-  .err{background:#f8d7da;color:#721c24}
-  .prog{background:#d1ecf1;color:#0c5460}
-  .warn{background:#fff3cd;color:#856404}
-  table{width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden}
-  th{background:#e9ecef;padding:10px 12px;text-align:left;font-size:0.9em}
-  td{padding:9px 12px;border-top:1px solid #eee;font-size:0.9em}
-  .dir{font-weight:bold}
-  .dir a{color:#333;text-decoration:none}
-  .dir a:hover{color:#007bff}
+  button{background:#161616;color:#a08040;border:1px solid #2a2415;padding:7px 18px;border-radius:6px;cursor:pointer;font-size:0.88em;font-family:Georgia,serif;letter-spacing:0.04em;transition:border-color 0.2s,color 0.2s}
+  button:hover{border-color:#c8a840;color:#d4a94a}
+  .btn-sm{padding:4px 10px;font-size:0.82em}
+  .btn-del{color:#8a4a4a;border-color:#2a1515}.btn-del:hover{border-color:#c87070;color:#c87070}
+  .btn-dl{background:#161616;color:#4a8a4a;border:1px solid #1a3a1a;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:0.82em;display:inline-block;font-family:Georgia,serif;transition:border-color 0.2s,color 0.2s}
+  .btn-dl:hover{border-color:#4a9a4a;color:#6aaa6a}
+  #status{margin:12px 0;padding:10px 14px;border-radius:6px;display:none;font-size:0.88em;font-family:sans-serif}
+  .ok{background:#0e1a0e;color:#4a8a4a;border:1px solid #1a3a1a}
+  .err{background:#1a0e0e;color:#8a4a4a;border:1px solid #3a1a1a}
+  .prog{background:#0e1218;color:#4a7a9a;border:1px solid #1a2a38}
+  .warn{background:#1a1608;color:#c8a840;border:1px solid #3a2e10}
+  table{width:100%;border-collapse:collapse;background:#161616;border-radius:8px;overflow:hidden;border:1px solid #2a2415;margin-top:8px}
+  th{background:#1a1608;padding:10px 12px;text-align:left;font-size:0.8em;font-weight:400;letter-spacing:0.1em;text-transform:uppercase;color:#7a6030;border-bottom:1px solid #2a2415}
+  td{padding:9px 12px;border-top:1px solid #1e1a0e;font-size:0.88em}
+  tr:hover td{background:#1a1608}
+  .dir a{color:#c8a840;text-decoration:none;font-style:italic}
+  .dir a:hover{color:#e0c060}
+  .file-name{color:#a08040}
+  .file-size{color:#5a4a20;font-family:sans-serif;font-size:0.82em}
   .actions{display:flex;gap:6px;justify-content:flex-end}
-  .new-folder{margin:8px 0;display:flex;gap:8px}
-  .new-folder input{flex:1;padding:6px 10px;border:1px solid #ccc;border-radius:6px;font-size:0.9em}
+  .new-folder{margin:10px 0;display:flex;gap:8px}
+  .new-folder input{flex:1;padding:7px 12px;border:1px solid #2a2415;border-radius:6px;font-size:0.88em;background:#161616;color:#c8b97a;font-family:Georgia,serif}
+  .new-folder input:focus{outline:none;border-color:#c8a840}
 </style>
 </head>
 <body>
-<h1>Saga Talu File Transfer</h1>
+<h1>Saga Talu</h1>
+<div class="subtitle">File Transfer</div>
 <div class="path" id="pathbar"></div>
 
 <div class="drop" id="drop" onclick="document.getElementById('fileinput').click()">
@@ -104,15 +112,17 @@ async function navigate(path) {
     tbody.appendChild(tr);
   }
 
-  items.forEach(item => {
+  const dirs = items.filter(i => i.isDir).sort((a,b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+  const files = items.filter(i => !i.isDir).sort((a,b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+  [...dirs, ...files].forEach(item => {
     const tr = document.createElement('tr');
     if (item.isDir) {
       const childPath = (currentPath === '/' ? '' : currentPath) + '/' + item.name;
       tr.innerHTML = '<td class="dir"><a href="#" onclick="navigate(\'' + childPath + '\')">[+] ' + item.name + '</a></td><td></td><td class="actions"><button class="btn-sm btn-del" onclick="delFile(\''+item.name+'\')">Delete</button></td>';
     } else {
       tr.innerHTML =
-        '<td>' + item.name + '</td>' +
-        '<td>' + formatSize(item.size) + '</td>' +
+        '<td class="file-name">' + item.name + '</td>' +
+        '<td class="file-size">' + formatSize(item.size) + '</td>' +
         '<td class="actions"><a class="btn-sm btn-dl" href="/download?path='+encodeURIComponent((currentPath==='/'?'':currentPath)+'/'+item.name)+'" download>Download</a> <button class="btn-sm btn-del" onclick="delFile(\''+item.name+'\')">Delete</button></td>';
     }
     tbody.appendChild(tr);
