@@ -7,7 +7,7 @@
 class GfxRenderer;
 class Bitmap;
 
-namespace sumi {
+namespace sagatalu {
 
 struct Core;
 
@@ -31,4 +31,4 @@ class SleepState : public State {
   void waitForPowerRelease() const;
 };
 
-}  // namespace sumi
+}  // namespace sagatalu

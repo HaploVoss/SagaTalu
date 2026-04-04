@@ -418,10 +418,10 @@ bool bmpTo2BitBmpScaled(const char* srcPath, const char* dstPath, int targetMaxW
   uint8_t* srcRows = nullptr;
   uint8_t* outRow = nullptr;
 
-  if (sumi::MemoryArena::isInitialized() && sumi::MemoryArena::primaryBuffer &&
-      totalBufSize <= sumi::MemoryArena::PRIMARY_BUFFER_SIZE) {
-    srcRows = sumi::MemoryArena::primaryBuffer;
-    outRow = sumi::MemoryArena::primaryBuffer + srcRowsSize;
+  if (sagatalu::MemoryArena::isInitialized() && sagatalu::MemoryArena::primaryBuffer &&
+      totalBufSize <= sagatalu::MemoryArena::PRIMARY_BUFFER_SIZE) {
+    srcRows = sagatalu::MemoryArena::primaryBuffer;
+    outRow = sagatalu::MemoryArena::primaryBuffer + srcRowsSize;
     usesArena = true;
     Serial.printf("[%lu] [BMP] Using arena primary for row buffers (%zu bytes)\n", millis(), totalBufSize);
   } else {
@@ -449,9 +449,9 @@ bool bmpTo2BitBmpScaled(const char* srcPath, const char* dstPath, int targetMaxW
 
   // Create 2-bit ditherer — use arena ditherRegion when available
   AtkinsonDitherer* ditherer;
-  if (sumi::MemoryArena::isInitialized() && sumi::MemoryArena::ditherRegion) {
-    ditherer = new AtkinsonDitherer(outWidth, sumi::MemoryArena::ditherRegion,
-                                    sumi::MemoryArena::DITHER_REGION_SIZE);
+  if (sagatalu::MemoryArena::isInitialized() && sagatalu::MemoryArena::ditherRegion) {
+    ditherer = new AtkinsonDitherer(outWidth, sagatalu::MemoryArena::ditherRegion,
+                                    sagatalu::MemoryArena::DITHER_REGION_SIZE);
   } else {
     ditherer = new AtkinsonDitherer(outWidth);
   }

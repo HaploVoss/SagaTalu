@@ -1078,9 +1078,11 @@ std::string ChapterHtmlSlimParser::cacheImage(const std::string& src) {
   }
   tempFile.close();
 
-  const int maxImageHeight = config.allowTallImages ? 2000 : config.viewportHeight;
+  // Always convert images at portrait dimensions (480x800 max) so the cache is
+  // orientation-independent. drawBitmap scales to fit whatever the actual viewport is.
+  const int maxImageHeight = config.allowTallImages ? 2000 : 800;
   ImageConvertConfig convertConfig;
-  convertConfig.maxWidth = static_cast<int>(config.viewportWidth);
+  convertConfig.maxWidth = 480;
   convertConfig.maxHeight = maxImageHeight;
   convertConfig.logTag = "EHP";
   convertConfig.shouldAbort = externalAbortCallback_;

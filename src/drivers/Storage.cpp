@@ -2,7 +2,7 @@
 
 #include <SDCardManager.h>
 
-namespace sumi {
+namespace sagatalu {
 namespace drivers {
 
 Result<void> Storage::init() {
@@ -118,4 +118,4 @@ Result<size_t> Storage::readToBuffer(const char* path, char* buffer, size_t buff
 }
 
 }  // namespace drivers
-}  // namespace sumi
+}  // namespace sagatalu

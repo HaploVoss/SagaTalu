@@ -2,7 +2,7 @@
 
 /**
  * @file Minesweeper.h
- * @brief Minesweeper game — Minesweeper game plugin for SUMI
+ * @brief Minesweeper game — Minesweeper game plugin for SagaTalu
  */
 
 #include "../config.h"
@@ -17,7 +17,7 @@
 #include "PluginRenderer.h"
 #include "icons/minesweeper_icons.h"
 
-namespace sumi {
+namespace sagatalu {
 
 class MinesweeperGame : public PluginInterface {
  public:
@@ -294,6 +294,6 @@ class MinesweeperGame : public PluginInterface {
   }
 };
 
-}  // namespace sumi
+}  // namespace sagatalu
 
 #endif  // FEATURE_PLUGINS && FEATURE_GAMES

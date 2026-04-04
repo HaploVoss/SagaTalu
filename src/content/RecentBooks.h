@@ -4,12 +4,12 @@
 #include <cstring>
 #include "../config.h"
 
-namespace sumi {
+namespace sagatalu {
 
 struct Core;
 
 // RecentBooks - Tracks recently opened books in order
-// Stored in /.sumi/recent.bin
+// Stored in /.sagatalu/recent.bin
 // Used by HomeState to show library carousel
 class RecentBooks {
  public:
@@ -54,7 +54,7 @@ class RecentBooks {
 
  private:
   static constexpr uint8_t VERSION = 2;  // v2: added thumbPath field
-// Stored in SUMI_DIR/recent.bin
-  static constexpr const char* INDEX_PATH = SUMI_DIR "/recent.bin";};
+// Stored in SAGATALU_DIR/recent.bin
+  static constexpr const char* INDEX_PATH = SAGATALU_DIR "/recent.bin";};
 
-}  // namespace sumi
+}  // namespace sagatalu

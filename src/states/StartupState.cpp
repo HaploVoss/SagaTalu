@@ -4,7 +4,7 @@
 
 #include "../core/Core.h"
 
-namespace sumi {
+namespace sagatalu {
 
 void StartupState::enter(Core& core) {
   Serial.println("[STATE] StartupState::enter");
@@ -26,4 +26,4 @@ StateTransition StartupState::update(Core& core) {
   return StateTransition::stay(StateId::Startup);
 }
 
-}  // namespace sumi
+}  // namespace sagatalu

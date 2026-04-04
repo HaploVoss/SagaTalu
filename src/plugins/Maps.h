@@ -12,11 +12,11 @@
 #include "PluginInterface.h"
 #include "PluginRenderer.h"
 
-namespace sumi {
+namespace sagatalu {
 
 /**
  * @file Maps.h
- * @brief Offline tile-based map viewer for Sumi e-reader
+ * @brief Offline tile-based map viewer for SagaTalu e-reader
  * @version 2.0.0
  *
  * Features:
@@ -122,8 +122,8 @@ private:
 
 // === IMPLEMENTATION ===
 
-static const char* MAPS_TMP_TILE = "/.sumi/cache/_tile_tmp.bmp";
-static const char* MAPS_TMP_IMG = "/.sumi/cache/_map_tmp.bmp";
+static const char* MAPS_TMP_TILE = "/.sagatalu/cache/_tile_tmp.bmp";
+static const char* MAPS_TMP_IMG = "/.sagatalu/cache/_map_tmp.bmp";
 
 void MapsApp::reset() {
     _mapCount = 0;
@@ -776,6 +776,6 @@ void MapsApp::drawImageRegion(const char* path, int srcX, int srcY, int zoom) {
     f.close();
 }
 
-}  // namespace sumi
+}  // namespace sagatalu
 
 #endif  // FEATURE_PLUGINS

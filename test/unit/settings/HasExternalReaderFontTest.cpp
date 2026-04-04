@@ -12,7 +12,7 @@ struct Theme {
   char readerFontFamilyLarge[32];
 };
 
-namespace sumi {
+namespace sagatalu {
 struct Settings {
   enum FontSize : uint8_t { FontXSmall = 0, FontSmall = 1, FontMedium = 2, FontLarge = 3 };
 
@@ -37,7 +37,7 @@ struct Settings {
     return family && *family;
   }
 };
-}  // namespace sumi
+}  // namespace sagatalu
 
 static Theme makeTheme(const char* xsmall = "", const char* small = "", const char* medium = "",
                         const char* large = "") {
@@ -55,67 +55,67 @@ int main() {
   // === No external fonts (all empty) ===
   {
     Theme theme = makeTheme();
-    sumi::Settings settings;
+    sagatalu::Settings settings;
 
-    settings.fontSize = sumi::Settings::FontXSmall;
+    settings.fontSize = sagatalu::Settings::FontXSmall;
     runner.expectFalse(settings.hasExternalReaderFont(theme), "XSmall: empty family returns false");
 
-    settings.fontSize = sumi::Settings::FontSmall;
+    settings.fontSize = sagatalu::Settings::FontSmall;
     runner.expectFalse(settings.hasExternalReaderFont(theme), "Small: empty family returns false");
 
-    settings.fontSize = sumi::Settings::FontMedium;
+    settings.fontSize = sagatalu::Settings::FontMedium;
     runner.expectFalse(settings.hasExternalReaderFont(theme), "Medium: empty family returns false");
 
-    settings.fontSize = sumi::Settings::FontLarge;
+    settings.fontSize = sagatalu::Settings::FontLarge;
     runner.expectFalse(settings.hasExternalReaderFont(theme), "Large: empty family returns false");
   }
 
   // === All external fonts set ===
   {
     Theme theme = makeTheme("NotoSans", "NotoSans", "NotoSans", "NotoSans");
-    sumi::Settings settings;
+    sagatalu::Settings settings;
 
-    settings.fontSize = sumi::Settings::FontXSmall;
+    settings.fontSize = sagatalu::Settings::FontXSmall;
     runner.expectTrue(settings.hasExternalReaderFont(theme), "XSmall: non-empty family returns true");
 
-    settings.fontSize = sumi::Settings::FontSmall;
+    settings.fontSize = sagatalu::Settings::FontSmall;
     runner.expectTrue(settings.hasExternalReaderFont(theme), "Small: non-empty family returns true");
 
-    settings.fontSize = sumi::Settings::FontMedium;
+    settings.fontSize = sagatalu::Settings::FontMedium;
     runner.expectTrue(settings.hasExternalReaderFont(theme), "Medium: non-empty family returns true");
 
-    settings.fontSize = sumi::Settings::FontLarge;
+    settings.fontSize = sagatalu::Settings::FontLarge;
     runner.expectTrue(settings.hasExternalReaderFont(theme), "Large: non-empty family returns true");
   }
 
   // === Only some sizes have external fonts ===
   {
     Theme theme = makeTheme("", "", "NotoSans", "");
-    sumi::Settings settings;
+    sagatalu::Settings settings;
 
-    settings.fontSize = sumi::Settings::FontXSmall;
+    settings.fontSize = sagatalu::Settings::FontXSmall;
     runner.expectFalse(settings.hasExternalReaderFont(theme), "XSmall: no external font when only Medium set");
 
-    settings.fontSize = sumi::Settings::FontSmall;
+    settings.fontSize = sagatalu::Settings::FontSmall;
     runner.expectFalse(settings.hasExternalReaderFont(theme), "Small: no external font when only Medium set");
 
-    settings.fontSize = sumi::Settings::FontMedium;
+    settings.fontSize = sagatalu::Settings::FontMedium;
     runner.expectTrue(settings.hasExternalReaderFont(theme), "Medium: has external font");
 
-    settings.fontSize = sumi::Settings::FontLarge;
+    settings.fontSize = sagatalu::Settings::FontLarge;
     runner.expectFalse(settings.hasExternalReaderFont(theme), "Large: no external font when only Medium set");
   }
 
   // === Default fontSize is FontMedium ===
   {
-    sumi::Settings settings;
-    runner.expectEq(uint8_t(sumi::Settings::FontMedium), settings.fontSize, "default fontSize is FontMedium");
+    sagatalu::Settings settings;
+    runner.expectEq(uint8_t(sagatalu::Settings::FontMedium), settings.fontSize, "default fontSize is FontMedium");
   }
 
   // === Unknown fontSize falls through to Small (default case) ===
   {
     Theme theme = makeTheme("", "ThaiFont", "", "");
-    sumi::Settings settings;
+    sagatalu::Settings settings;
     settings.fontSize = 99;  // invalid value
     runner.expectTrue(settings.hasExternalReaderFont(theme), "invalid fontSize falls to default (Small)");
   }

@@ -9,11 +9,11 @@
 #include "PluginInterface.h"
 #include "PluginRenderer.h"
 
-namespace sumi {
+namespace sagatalu {
 
 /**
  * @file ToolSuite.h
- * @brief Utility tools for Sumi e-reader
+ * @brief Utility tools for SagaTalu e-reader
  * @version 1.0.0
  * 
  * Tools: Calculator, Timer, Stopwatch
@@ -747,6 +747,6 @@ void ToolSuiteApp::drawStopwatchPartial() {
     } while (d_.nextPage());
 }
 
-}  // namespace sumi
+}  // namespace sagatalu
 
 #endif  // FEATURE_PLUGINS

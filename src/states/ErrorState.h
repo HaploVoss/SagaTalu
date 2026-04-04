@@ -5,7 +5,7 @@
 
 class GfxRenderer;
 
-namespace sumi {
+namespace sagatalu {
 
 // ErrorState displays an error message and waits for user input
 class ErrorState : public State {
@@ -27,4 +27,4 @@ class ErrorState : public State {
   bool needsRender_ = true;
 };
 
-}  // namespace sumi
+}  // namespace sagatalu

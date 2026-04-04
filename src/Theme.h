@@ -6,7 +6,7 @@
 #include "config.h"
 
 /**
- * Theme configuration for SUMI UI.
+ * Theme configuration for SagaTalu UI.
  *
  * Controls colors, fonts, and layout for all activities.
  * Since e-ink is binary (black/white), colors are represented as booleans:

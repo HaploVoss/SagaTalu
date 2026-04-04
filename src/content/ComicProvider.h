@@ -5,7 +5,7 @@
 #include "../core/Result.h"
 #include "ContentTypes.h"
 
-namespace sumi {
+namespace sagatalu {
 
 // ComicProvider wraps the ComicReader for .comic binary files
 struct ComicProvider {
@@ -30,4 +30,4 @@ struct ComicProvider {
   const ComicReader& getReader() const { return reader; }
 };
 
-}  // namespace sumi
+}  // namespace sagatalu

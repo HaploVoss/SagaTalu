@@ -199,7 +199,7 @@ struct ReaderSettingsView {
   static constexpr const char* const STATUS_BAR_VALUES[] = {"None", "Show"};
   static constexpr const char* const ORIENTATION_VALUES[] = {"Portrait", "Landscape CW", "Inverted", "Landscape CCW"};
 
-  static constexpr int SETTING_COUNT = 12;
+  static constexpr int SETTING_COUNT = 10;
   static constexpr int MAX_THEMES = 16;
   static constexpr int MAX_FONTS = 16;
   static constexpr int VISIBLE_ITEMS = 11;

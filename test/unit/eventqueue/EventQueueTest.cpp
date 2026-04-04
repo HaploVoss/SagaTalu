@@ -5,7 +5,7 @@
 // We need to provide the dependencies for EventQueue.h
 // Create minimal stubs for Result.h and Types.h dependencies
 
-namespace sumi {
+namespace sagatalu {
 
 enum class Button : uint8_t {
   Up,
@@ -24,14 +24,14 @@ enum class Error : uint8_t {
   FileCorrupted,
 };
 
-}  // namespace sumi
+}  // namespace sagatalu
 
 // Now include EventQueue (we define Result.h and Types.h deps inline)
 #define RESULT_H_INCLUDED  // Skip the real header
 #define TYPES_H_INCLUDED
 
 // Include the EventQueue implementation
-namespace sumi {
+namespace sagatalu {
 
 enum class EventType : uint8_t {
   None = 0,
@@ -128,9 +128,9 @@ class EventQueue {
   uint8_t tail_ = 0;
 };
 
-}  // namespace sumi
+}  // namespace sagatalu
 
-using namespace sumi;
+using namespace sagatalu;
 
 int main() {
   TestUtils::TestRunner runner("EventQueue");

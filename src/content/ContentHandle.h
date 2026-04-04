@@ -8,7 +8,7 @@
 #include "TxtProvider.h"
 #include "XtcProvider.h"
 
-namespace sumi {
+namespace sagatalu {
 
 // ContentHandle - Tagged union holding one content provider at a time
 // Only one provider is active - saves memory by not allocating all providers
@@ -80,4 +80,4 @@ struct ContentHandle {
   static ContentMetadata emptyMetadata_;
 };
 
-}  // namespace sumi
+}  // namespace sagatalu

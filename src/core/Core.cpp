@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 
-namespace sumi {
+namespace sagatalu {
 
 Result<void> Core::init() {
   logMemory("Core::init start");
@@ -41,4 +41,4 @@ void Core::logMemory(const char* label) const {
   Serial.printf("[MEM] %s: free=%lu, largest=%lu\n", label, ESP.getFreeHeap(), ESP.getMaxAllocHeap());
 }
 
-}  // namespace sumi
+}  // namespace sagatalu

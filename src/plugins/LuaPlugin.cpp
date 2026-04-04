@@ -17,7 +17,7 @@ extern "C" {
 #include "LuaBindings.h"
 #include "PluginHelpers.h"
 
-namespace sumi {
+namespace sagatalu {
 
 // ---------------------------------------------------------------------------
 // Custom allocator with memory cap
@@ -131,15 +131,15 @@ void LuaPlugin::init(int screenW, int screenH) {
 
   // Store renderer pointer in registry
   lua_pushlightuserdata(L_, &renderer_);
-  lua_setfield(L_, LUA_REGISTRYINDEX, "sumi_renderer");
+  lua_setfield(L_, LUA_REGISTRYINDEX, "sagatalu_renderer");
 
   // Store screen dimensions in registry
   lua_pushinteger(L_, screenW);
-  lua_setfield(L_, LUA_REGISTRYINDEX, "sumi_screenW");
+  lua_setfield(L_, LUA_REGISTRYINDEX, "sagatalu_screenW");
   lua_pushinteger(L_, screenH);
-  lua_setfield(L_, LUA_REGISTRYINDEX, "sumi_screenH");
+  lua_setfield(L_, LUA_REGISTRYINDEX, "sagatalu_screenH");
 
-  // Register all SUMI drawing bindings
+  // Register all SagaTalu drawing bindings
   lua_bind::registerAll(L_);
 
   // Set SCREEN_W and SCREEN_H constants
@@ -403,6 +403,6 @@ void LuaPlugin::showError() {
   PluginUI::drawFooter(renderer_, "Back: exit", "", screenW_, screenH_);
 }
 
-}  // namespace sumi
+}  // namespace sagatalu
 
 #endif  // FEATURE_PLUGINS

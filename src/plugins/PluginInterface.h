@@ -2,10 +2,10 @@
 
 /**
  * @file PluginInterface.h
- * @brief Base interface for SUMI plugins
+ * @brief Base interface for SagaTalu plugins
  *
- * All ported SUMI plugins implement this interface.
- * PluginHostState wraps them as a SUMI State.
+ * All ported SagaTalu plugins implement this interface.
+ * PluginHostState wraps them as a SagaTalu State.
  */
 
 #include <cstdint>
@@ -14,9 +14,9 @@
 
 #if FEATURE_PLUGINS
 
-namespace sumi {
+namespace sagatalu {
 
-// Button enum matching SUMI's button codes for plugin compatibility
+// Button enum matching SagaTalu's button codes for plugin compatibility
 enum class PluginButton : uint8_t {
   None = 0,
   Up,
@@ -91,6 +91,6 @@ class PluginInterface {
   HostAction pendingAction = HostAction::None;
 };
 
-}  // namespace sumi
+}  // namespace sagatalu
 
 #endif  // FEATURE_PLUGINS

@@ -4,7 +4,7 @@
 
 #include "Core.h"
 
-namespace sumi {
+namespace sagatalu {
 
 void StateMachine::init(Core& core, StateId initialState) {
   // Exit current state if one exists (e.g., when triggering sleep from any state)
@@ -87,4 +87,4 @@ void StateMachine::transition(StateId next, Core& core, bool immediate) {
   inTransition_ = false;
 }
 
-}  // namespace sumi
+}  // namespace sagatalu

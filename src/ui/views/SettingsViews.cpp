@@ -23,9 +23,9 @@ const ReaderSettingsView::SettingDef ReaderSettingsView::DEFS[SETTING_COUNT] = {
     {"Line Spacing", SettingType::Enum, LINE_SPACING_VALUES, 4},
     {"Text Anti-Aliasing", SettingType::Toggle, nullptr, 0},
     {"Paragraph Alignment", SettingType::Enum, ALIGNMENT_VALUES, 5},
-    {"Hyphenation", SettingType::Toggle, nullptr, 0},
+    // {"Hyphenation", SettingType::Toggle, nullptr, 0},
     {"Show Images", SettingType::Toggle, nullptr, 0},
-    {"Show Tables", SettingType::Toggle, nullptr, 0},
+    // {"Show Tables", SettingType::Toggle, nullptr, 0},
     {"Status Bar", SettingType::Enum, STATUS_BAR_VALUES, 2},
     {"Reading Orientation", SettingType::Enum, ORIENTATION_VALUES, 4},
 };

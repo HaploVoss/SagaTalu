@@ -345,12 +345,13 @@ void XMLCALL ContentOpfParser::characterData(void* userData, const XML_Char* s, 
   }
 
   if (self->state == IN_BOOK_SUBJECT) {
-    // Only capture first dc:subject that starts with "sumi:" — ignore others
+    // Only capture first dc:subject that starts with "sumi:" (EPUB content hint protocol — intentionally preserved)
     if (self->subject.empty()) {
       std::string candidate(s, len);
+      // "sumi:" prefix is the EPUB content hint protocol — intentionally preserved
       if (candidate.rfind("sumi:", 0) == 0 && candidate.size() <= MAX_SUBJECT_LENGTH) {
         self->subject = candidate;
-        Serial.printf("[COF] Found sumi subject hint: %s\n", self->subject.c_str());
+        Serial.printf("[COF] Found content hint: %s\n", self->subject.c_str());
       }
     }
     return;

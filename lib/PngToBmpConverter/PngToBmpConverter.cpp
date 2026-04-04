@@ -242,10 +242,10 @@ void pngInitCallback(pngle_t* pngle, uint32_t w, uint32_t h) {
   const size_t totalNeeded = srcRowSize + outRowSize + accumSize + countSize;
 
   ctx->usesArena = false;
-  if (sumi::MemoryArena::isInitialized() && sumi::MemoryArena::scratchBuffer &&
-      totalNeeded <= sumi::MemoryArena::SCRATCH_BUFFER_SIZE) {
+  if (sagatalu::MemoryArena::isInitialized() && sagatalu::MemoryArena::scratchBuffer &&
+      totalNeeded <= sagatalu::MemoryArena::SCRATCH_BUFFER_SIZE) {
     // Pack all buffers into arena scratch (8KB)
-    uint8_t* p = sumi::MemoryArena::scratchBuffer;
+    uint8_t* p = sagatalu::MemoryArena::scratchBuffer;
     ctx->srcRowBuffer = p;
     p += srcRowSize;
     ctx->outRowBuffer = p;
@@ -255,7 +255,7 @@ void pngInitCallback(pngle_t* pngle, uint32_t w, uint32_t h) {
       p += accumSize;
       ctx->rowCount = reinterpret_cast<uint16_t*>(p);
     }
-    memset(sumi::MemoryArena::scratchBuffer, 0, totalNeeded);
+    memset(sagatalu::MemoryArena::scratchBuffer, 0, totalNeeded);
     ctx->usesArena = true;
     Serial.printf("[%lu] [PNG] Using arena scratch for row buffers (%zu bytes)\n", millis(), totalNeeded);
   } else {
@@ -299,9 +299,9 @@ void pngInitCallback(pngle_t* pngle, uint32_t w, uint32_t h) {
   // Skip ditherer allocation in quickMode for faster preview
   // Use arena-backed memory when available to avoid heap fragmentation
   if (!ctx->quickMode) {
-    if (sumi::MemoryArena::isInitialized() && sumi::MemoryArena::ditherRegion) {
-      ctx->ditherer = new (std::nothrow) AtkinsonDitherer(ctx->outWidth, sumi::MemoryArena::ditherRegion,
-                                                           sumi::MemoryArena::DITHER_REGION_SIZE);
+    if (sagatalu::MemoryArena::isInitialized() && sagatalu::MemoryArena::ditherRegion) {
+      ctx->ditherer = new (std::nothrow) AtkinsonDitherer(ctx->outWidth, sagatalu::MemoryArena::ditherRegion,
+                                                           sagatalu::MemoryArena::DITHER_REGION_SIZE);
     } else {
       ctx->ditherer = new (std::nothrow) AtkinsonDitherer(ctx->outWidth);
     }

@@ -6,7 +6,7 @@
 #include "../core/Result.h"
 #include "../core/Types.h"
 
-namespace sumi {
+namespace sagatalu {
 
 // Metadata shared by all content types
 struct ContentMetadata {
@@ -47,4 +47,4 @@ struct TocEntry {
 // Content format detection
 ContentType detectContentType(const char* path);
 
-}  // namespace sumi
+}  // namespace sagatalu

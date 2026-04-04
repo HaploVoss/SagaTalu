@@ -5,7 +5,7 @@
 
 #include "../core/Core.h"
 
-namespace sumi {
+namespace sagatalu {
 
 void RecentBooks::recordOpen(Core& core, const char* path, const char* title,
                              const char* author, uint16_t progress,
@@ -188,4 +188,4 @@ void RecentBooks::clear(Core& core) {
   Serial.println("[RECENT] Cleared all recent books");
 }
 
-}  // namespace sumi
+}  // namespace sagatalu

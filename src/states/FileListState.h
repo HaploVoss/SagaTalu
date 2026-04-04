@@ -11,7 +11,7 @@
 
 class GfxRenderer;
 
-namespace sumi {
+namespace sagatalu {
 
 #if FEATURE_PLUGINS
 class PluginHostState;
@@ -99,4 +99,4 @@ class FileListState : public State {
   bool isAtRoot() const { return strcmp(currentDir_, "/") == 0; }
 };
 
-}  // namespace sumi
+}  // namespace sagatalu

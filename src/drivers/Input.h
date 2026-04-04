@@ -9,7 +9,7 @@
 class InputManager;
 class MappedInputManager;
 
-namespace sumi {
+namespace sagatalu {
 namespace drivers {
 
 class Input {
@@ -51,4 +51,4 @@ class Input {
 };
 
 }  // namespace drivers
-}  // namespace sumi
+}  // namespace sagatalu

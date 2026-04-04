@@ -2,7 +2,7 @@
 
 #include <cstring>
 
-namespace sumi {
+namespace sagatalu {
 
 ContentType detectContentType(const char* path) {
   if (!path) return ContentType::None;
@@ -31,4 +31,4 @@ ContentType detectContentType(const char* path) {
   return ContentType::None;
 }
 
-}  // namespace sumi
+}  // namespace sagatalu

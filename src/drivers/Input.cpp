@@ -8,7 +8,7 @@
 extern InputManager inputManager;
 extern MappedInputManager& mappedInput;
 
-namespace sumi {
+namespace sagatalu {
 namespace drivers {
 
 Result<void> Input::init(EventQueue& eventQueue) {
@@ -158,4 +158,4 @@ void Input::resyncState() {
 MappedInputManager& Input::raw() { return mappedInput; }
 
 }  // namespace drivers
-}  // namespace sumi
+}  // namespace sagatalu

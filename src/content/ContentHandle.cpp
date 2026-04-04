@@ -9,7 +9,7 @@
 #include <cstring>  // For memset
 #include <new>      // For placement new
 
-namespace sumi {
+namespace sagatalu {
 
 // Static empty metadata
 ContentMetadata ContentHandle::emptyMetadata_ = {};
@@ -312,4 +312,4 @@ ComicProvider* ContentHandle::asComic() { return type == ContentType::Comic ? &c
 
 const ComicProvider* ContentHandle::asComic() const { return type == ContentType::Comic ? &comic : nullptr; }
 
-}  // namespace sumi
+}  // namespace sagatalu

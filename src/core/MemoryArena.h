@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace sumi {
+namespace sagatalu {
 
 /**
  * Pre-allocated memory arena - 82KB for image/cache and text layout operations.
@@ -115,4 +115,4 @@ class ArenaScratch {
   bool isValid() const;
 };
 
-}  // namespace sumi
+}  // namespace sagatalu

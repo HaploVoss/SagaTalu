@@ -2,7 +2,7 @@
 
 #include <cstring>
 
-namespace sumi {
+namespace sagatalu {
 
 Result<void> EpubProvider::open(const char* path, const char* cacheDir) {
   close();
@@ -70,4 +70,4 @@ Result<TocEntry> EpubProvider::getTocEntry(uint16_t index) const {
   return Ok(entry);
 }
 
-}  // namespace sumi
+}  // namespace sagatalu

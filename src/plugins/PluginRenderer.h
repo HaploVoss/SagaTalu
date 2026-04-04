@@ -2,9 +2,9 @@
 
 /**
  * @file PluginRenderer.h
- * @brief GxEPD2-style drawing API adapter for SUMI GfxRenderer
+ * @brief GxEPD2-style drawing API adapter for SagaTalu GfxRenderer
  *
- * SUMI plugins draw using GxEPD2 calls: display.fillScreen(), display.print(),
+ * SagaTalu plugins draw using GxEPD2 calls: display.fillScreen(), display.print(),
  * display.drawRect(), etc. inside firstPage()/nextPage() loops.
  *
  * This adapter provides that same API surface, translating to GfxRenderer calls.
@@ -27,7 +27,7 @@
 
 #if FEATURE_PLUGINS
 
-namespace sumi {
+namespace sagatalu {
 
 // Color constants matching GxEPD2
 static constexpr bool GxEPD_BLACK = true;
@@ -64,13 +64,13 @@ class PluginRenderer {
     cursorY_ = y;
   }
 
-  // We use SUMI fonts for plugins. setFont() from Adafruit GFX maps to 
-  // SUMI font IDs. nullptr = small/builtin font, non-null = regular font.
+  // We use SagaTalu fonts for plugins. setFont() from Adafruit GFX maps to 
+  // SagaTalu font IDs. nullptr = small/builtin font, non-null = regular font.
   void setFont(const void* font) {
     if (font == nullptr) {
       pluginFontId_ = smallFontId_;  // Adafruit default = small font
     } else {
-      pluginFontId_ = regularFontId_;  // Named SUMI fonts = regular
+      pluginFontId_ = regularFontId_;  // Named SagaTalu fonts = regular
     }
   }
 
@@ -243,7 +243,7 @@ class PluginRenderer {
   int getCursorX() const { return cursorX_; }
   int getCursorY() const { return cursorY_; }
 
-  // Rotation (no-op — SUMI handles rotation at display level)
+  // Rotation (no-op — SagaTalu handles rotation at display level)
   void setRotation(int r) { (void)r; }
 
   // Bitmap drawing (1-bit packed, MSB first — GxEPD2 format)
@@ -294,6 +294,6 @@ class PluginRenderer {
   int smallFontId_ = -731562571;  // Will be set to SMALL_FONT_ID by host
 };
 
-}  // namespace sumi
+}  // namespace sagatalu
 
 #endif  // FEATURE_PLUGINS

@@ -1,7 +1,7 @@
 /**
  * Txt.h
  *
- * Plain text file handler for SUMI
+ * Plain text file handler for SagaTalu
  * Provides EPUB-like interface for TXT file handling
  */
 

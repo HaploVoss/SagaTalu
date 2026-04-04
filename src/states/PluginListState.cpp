@@ -16,7 +16,7 @@
 #include "../ui/Elements.h"
 #include "ThemeManager.h"
 
-namespace sumi {
+namespace sagatalu {
 
 int PluginListState::pluginCount = 0;
 PluginEntry PluginListState::plugins[PluginListState::MAX_PLUGINS] = {};
@@ -37,16 +37,16 @@ bool PluginListState::registerPlugin(const char* name, const char* category, Plu
 
 // Factory functions for each Lua plugin slot (up to 8)
 // These are plain function pointers — no captures — using static index storage
-static sumi::PluginInterface* luaFactory0() { return new sumi::LuaPlugin(*sumi::PluginListState::luaRenderer_, sumi::PluginListState::luaPaths_[0]); }
-static sumi::PluginInterface* luaFactory1() { return new sumi::LuaPlugin(*sumi::PluginListState::luaRenderer_, sumi::PluginListState::luaPaths_[1]); }
-static sumi::PluginInterface* luaFactory2() { return new sumi::LuaPlugin(*sumi::PluginListState::luaRenderer_, sumi::PluginListState::luaPaths_[2]); }
-static sumi::PluginInterface* luaFactory3() { return new sumi::LuaPlugin(*sumi::PluginListState::luaRenderer_, sumi::PluginListState::luaPaths_[3]); }
-static sumi::PluginInterface* luaFactory4() { return new sumi::LuaPlugin(*sumi::PluginListState::luaRenderer_, sumi::PluginListState::luaPaths_[4]); }
-static sumi::PluginInterface* luaFactory5() { return new sumi::LuaPlugin(*sumi::PluginListState::luaRenderer_, sumi::PluginListState::luaPaths_[5]); }
-static sumi::PluginInterface* luaFactory6() { return new sumi::LuaPlugin(*sumi::PluginListState::luaRenderer_, sumi::PluginListState::luaPaths_[6]); }
-static sumi::PluginInterface* luaFactory7() { return new sumi::LuaPlugin(*sumi::PluginListState::luaRenderer_, sumi::PluginListState::luaPaths_[7]); }
+static sagatalu::PluginInterface* luaFactory0() { return new sagatalu::LuaPlugin(*sagatalu::PluginListState::luaRenderer_, sagatalu::PluginListState::luaPaths_[0]); }
+static sagatalu::PluginInterface* luaFactory1() { return new sagatalu::LuaPlugin(*sagatalu::PluginListState::luaRenderer_, sagatalu::PluginListState::luaPaths_[1]); }
+static sagatalu::PluginInterface* luaFactory2() { return new sagatalu::LuaPlugin(*sagatalu::PluginListState::luaRenderer_, sagatalu::PluginListState::luaPaths_[2]); }
+static sagatalu::PluginInterface* luaFactory3() { return new sagatalu::LuaPlugin(*sagatalu::PluginListState::luaRenderer_, sagatalu::PluginListState::luaPaths_[3]); }
+static sagatalu::PluginInterface* luaFactory4() { return new sagatalu::LuaPlugin(*sagatalu::PluginListState::luaRenderer_, sagatalu::PluginListState::luaPaths_[4]); }
+static sagatalu::PluginInterface* luaFactory5() { return new sagatalu::LuaPlugin(*sagatalu::PluginListState::luaRenderer_, sagatalu::PluginListState::luaPaths_[5]); }
+static sagatalu::PluginInterface* luaFactory6() { return new sagatalu::LuaPlugin(*sagatalu::PluginListState::luaRenderer_, sagatalu::PluginListState::luaPaths_[6]); }
+static sagatalu::PluginInterface* luaFactory7() { return new sagatalu::LuaPlugin(*sagatalu::PluginListState::luaRenderer_, sagatalu::PluginListState::luaPaths_[7]); }
 
-static sumi::PluginFactory luaFactories[sumi::PluginListState::MAX_LUA_PLUGINS] = {
+static sagatalu::PluginFactory luaFactories[sagatalu::PluginListState::MAX_LUA_PLUGINS] = {
   luaFactory0, luaFactory1, luaFactory2, luaFactory3,
   luaFactory4, luaFactory5, luaFactory6, luaFactory7
 };
@@ -260,6 +260,6 @@ void PluginListState::drawList() const {
   }
 }
 
-}  // namespace sumi
+}  // namespace sagatalu
 
 #endif

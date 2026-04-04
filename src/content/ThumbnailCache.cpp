@@ -5,7 +5,7 @@
 #undef FILE_WRITE
 #include <LittleFS.h>
 
-namespace sumi {
+namespace sagatalu {
 
 void ThumbnailCache::getPath(uint32_t bookHash, char* pathOut, size_t maxLen) {
   snprintf(pathOut, maxLen, "%s/%08lX.thb", CACHE_DIR, (unsigned long)bookHash);
@@ -110,4 +110,4 @@ void ThumbnailCache::clear() {
   Serial.printf("[%lu] [THUMB] Cleared cache (%d files)\n", millis(), removed);
 }
 
-}  // namespace sumi
+}  // namespace sagatalu

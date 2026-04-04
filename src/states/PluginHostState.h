@@ -10,7 +10,7 @@
 #include "../plugins/PluginRenderer.h"
 #include "State.h"
 
-namespace sumi {
+namespace sagatalu {
 
 // Factory function type for creating plugin instances
 using PluginFactory = PluginInterface* (*)();
@@ -44,13 +44,13 @@ class PluginHostState : public State {
   unsigned long lastBackMs_ = 0;
   bool isLandscape_ = false;  // Track if plugin switched to landscape
 
-  // Translate SUMI button events → PluginButton
+  // Translate SagaTalu button events → PluginButton
   PluginButton translateButton(Button btn) const;
 
   // Perform display refresh based on plugin run mode
   void refreshDisplay(Core& core);
 };
 
-}  // namespace sumi
+}  // namespace sagatalu
 
 #endif  // FEATURE_PLUGINS

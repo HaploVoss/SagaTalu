@@ -2,7 +2,7 @@
 
 /**
  * @file TodoList.h
- * @brief Simple to-do list — ported from SUMI
+ * @brief Simple to-do list — ported from SagaTalu
  *
  * Reads/writes /data/todo.txt on SD card.
  * Format: X Completed task / - Pending task
@@ -21,7 +21,7 @@
 #include "PluginInterface.h"
 #include "PluginRenderer.h"
 
-namespace sumi {
+namespace sagatalu {
 
 class TodoApp : public PluginInterface {
  public:
@@ -245,6 +245,6 @@ class TodoApp : public PluginInterface {
   }
 };
 
-}  // namespace sumi
+}  // namespace sagatalu
 
 #endif  // FEATURE_PLUGINS

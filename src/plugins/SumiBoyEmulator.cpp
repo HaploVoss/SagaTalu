@@ -13,7 +13,7 @@
 
 // gb_controls_img.h removed — using programmatic controls overlay instead
 
-namespace sumi {
+namespace sagatalu {
 
 // 4x4 ordered Bayer matrix for dithering
 static const uint8_t bayer4x4[4][4] = {
@@ -1368,6 +1368,6 @@ bool SumiBoyEmulator::loadSRAM() {
   return true;
 }
 
-}  // namespace sumi
+}  // namespace sagatalu
 
 #endif  // FEATURE_PLUGINS && FEATURE_GAMES

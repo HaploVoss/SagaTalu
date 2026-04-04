@@ -5,7 +5,7 @@
 #include "../core/Result.h"
 #include "ContentTypes.h"
 
-namespace sumi {
+namespace sagatalu {
 
 // XtcProvider wraps the XtcParser
 struct XtcProvider {
@@ -31,4 +31,4 @@ struct XtcProvider {
   const xtc::XtcParser& getParser() const { return parser; }
 };
 
-}  // namespace sumi
+}  // namespace sagatalu

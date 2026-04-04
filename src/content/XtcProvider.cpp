@@ -6,7 +6,7 @@
 #include <functional>
 #include <string>
 
-namespace sumi {
+namespace sagatalu {
 
 Result<void> XtcProvider::open(const char* path, const char* cacheDir) {
   close();
@@ -84,4 +84,4 @@ Result<TocEntry> XtcProvider::getTocEntry(uint16_t index) const {
   return Ok(entry);
 }
 
-}  // namespace sumi
+}  // namespace sagatalu

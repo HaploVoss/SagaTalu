@@ -3,7 +3,7 @@
 #include "../states/State.h"
 #include "Types.h"
 
-namespace sumi {
+namespace sagatalu {
 
 struct Core;
 
@@ -32,4 +32,4 @@ class StateMachine {
   size_t stateCount_ = 0;
 };
 
-}  // namespace sumi
+}  // namespace sagatalu

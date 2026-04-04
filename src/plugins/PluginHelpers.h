@@ -4,7 +4,7 @@
  * @file PluginHelpers.h
  * @brief Standardized helpers for all plugins
  *
- * Ported from SUMI's PluginHelpers.h — adapted to use PluginRenderer
+ * Ported from SUMI (SagaTalu)'s PluginHelpers.h — adapted to use PluginRenderer
  * instead of direct GxEPD2 calls.
  */
 
@@ -15,7 +15,7 @@
 #include "PluginInterface.h"
 #include "PluginRenderer.h"
 
-namespace sumi {
+namespace sagatalu {
 
 // =============================================================================
 // Plugin UI Constants
@@ -257,6 +257,6 @@ enum class GameState : uint8_t {
   Menu,
 };
 
-}  // namespace sumi
+}  // namespace sagatalu
 
 #endif  // FEATURE_PLUGINS

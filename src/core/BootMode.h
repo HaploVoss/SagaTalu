@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace sumi {
+namespace sagatalu {
 
 // Boot modes for memory optimization
 enum class BootMode : uint8_t {
@@ -46,4 +46,4 @@ void clearTransition();
 // The e-ink display will retain this message during the reboot
 void showTransitionNotification(const char* message);
 
-}  // namespace sumi
+}  // namespace sagatalu

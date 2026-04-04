@@ -97,8 +97,8 @@ bool renderCoverFromBmp(GfxRenderer& renderer, const std::string& bmpPath, int m
   }
 
   // Release work buffer temporarily to free 26KB for BW buffer chunks (6x8KB=48KB needed)
-  const bool workWasInit = sumi::MemoryArena::isWorkInitialized();
-  if (workWasInit) sumi::MemoryArena::releaseWork();
+  const bool workWasInit = sagatalu::MemoryArena::isWorkInitialized();
+  if (workWasInit) sagatalu::MemoryArena::releaseWork();
   if (bitmap.hasGreyscale() && renderer.storeBwBuffer()) {
     bitmap.rewindToData();
     renderer.clearScreen(0x00);
@@ -115,7 +115,7 @@ bool renderCoverFromBmp(GfxRenderer& renderer, const std::string& bmpPath, int m
     renderer.restoreBwBuffer();
   }
 
-  if (workWasInit) sumi::MemoryArena::reclaimWork();
+  if (workWasInit) sagatalu::MemoryArena::reclaimWork();
 
   coverFile.close();
   Serial.printf("[%lu] [CVR] Rendered cover from BMP\n", millis());

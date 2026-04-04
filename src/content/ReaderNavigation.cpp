@@ -4,7 +4,7 @@
 
 #include <cstdint>
 
-namespace sumi {
+namespace sagatalu {
 
 ReaderNavigation::NavResult ReaderNavigation::next(ContentType type, const Position& current, const PageCache* cache,
                                                    uint32_t totalPages) {
@@ -84,4 +84,4 @@ bool ReaderNavigation::needsCacheExtension(const PageCache* cache, int sectionPa
   return cache->needsExtension(sectionPage);
 }
 
-}  // namespace sumi
+}  // namespace sagatalu

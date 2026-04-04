@@ -10,7 +10,7 @@
 #include "PluginInterface.h"
 #include "PluginRenderer.h"
 
-namespace sumi {
+namespace sagatalu {
 
 // =============================================================================
 // Notes — Landscape-mode distraction-free writing app (BYOK-style)
@@ -781,7 +781,7 @@ void NotesApp::drawNewNote() {
   d_.print("Back: Cancel   OK: Create");
 }
 
-}  // namespace sumi
+}  // namespace sagatalu
 // Forward declaration for Notes factory
-sumi::PluginInterface* createNotesApp(sumi::PluginRenderer& r);
+sagatalu::PluginInterface* createNotesApp(sagatalu::PluginRenderer& r);
 #endif  // FEATURE_PLUGINS

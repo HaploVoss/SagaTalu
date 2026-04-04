@@ -56,7 +56,7 @@ void GfxRenderer::begin() {
 
   // Migrate bitmap row buffers from heap to arena if arena is now available
   // (constructor runs before arena init, so initial allocation uses malloc)
-  if (bitmapRowsOwnMemory_ && sumi::MemoryArena::isInitialized() && sumi::MemoryArena::imageRowRegion) {
+  if (bitmapRowsOwnMemory_ && sagatalu::MemoryArena::isInitialized() && sagatalu::MemoryArena::imageRowRegion) {
     freeBitmapRowBuffers();
     allocateBitmapRowBuffers();
   }
@@ -272,8 +272,10 @@ void GfxRenderer::drawBitmap(const Bitmap& bitmap, const int x, const int y, con
     if (screenY < 0) continue;
     if (screenY >= getScreenHeight()) break;
 
-    // Inverse map: which source row?
-    const int bmpY = std::min(static_cast<int>(screenRow / scale), bitmap.getHeight() - 1);
+    const int srcRow = static_cast<int>(screenRow / scale);
+    const int bmpY = bitmap.isTopDown()
+      ? std::min(srcRow, bitmap.getHeight() - 1)
+      : std::min(bitmap.getHeight() - 1 - srcRow, bitmap.getHeight() - 1);
 
     // Only re-read row if it changed
     if (bmpY != lastBmpY) {
@@ -869,9 +871,9 @@ void GfxRenderer::getOrientedViewableTRBL(int* outTop, int* outRight, int* outBo
 
 void GfxRenderer::allocateBitmapRowBuffers() {
   // Use arena imageRowRegion when available (3400 bytes fits in 4KB region)
-  if (sumi::MemoryArena::isInitialized() && sumi::MemoryArena::imageRowRegion) {
-    bitmapOutputRow_ = sumi::MemoryArena::imageRowRegion;
-    bitmapRowBytes_ = sumi::MemoryArena::imageRowRegion + BITMAP_OUTPUT_ROW_SIZE;
+  if (sagatalu::MemoryArena::isInitialized() && sagatalu::MemoryArena::imageRowRegion) {
+    bitmapOutputRow_ = sagatalu::MemoryArena::imageRowRegion;
+    bitmapRowBytes_ = sagatalu::MemoryArena::imageRowRegion + BITMAP_OUTPUT_ROW_SIZE;
     bitmapRowsOwnMemory_ = false;
     return;
   }

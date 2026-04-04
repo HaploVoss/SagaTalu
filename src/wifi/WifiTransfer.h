@@ -5,7 +5,7 @@
 #include <SDCardManager.h>
 #include <SdFat.h>
 
-namespace sumi {
+namespace sagatalu {
 
 class WifiTransfer {
  public:
@@ -33,4 +33,4 @@ class WifiTransfer {
   void handleExportBg();
 };
 
-}  // namespace sumi
+}  // namespace sagatalu

@@ -11,7 +11,7 @@
 #include "PluginHostState.h"
 #include "State.h"
 
-namespace sumi {
+namespace sagatalu {
 
 struct Settings;  // Forward declaration for visibility filtering
 
@@ -76,6 +76,6 @@ class PluginListState : public State {
   void drawList() const;
 };
 
-}  // namespace sumi
+}  // namespace sagatalu
 
 #endif  // FEATURE_PLUGINS

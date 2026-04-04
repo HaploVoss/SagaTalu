@@ -11,11 +11,11 @@
 #include "icons/suit_icons.h"
 #include "icons/card_back_icon.h"
 
-namespace sumi {
+namespace sagatalu {
 
 /**
  * @file Solitaire.h
- * @brief Klondike Solitaire for Sumi e-reader
+ * @brief Klondike Solitaire for SagaTalu e-reader
  * @version 1.0.0
  */
 
@@ -437,6 +437,6 @@ void SolitaireGame::drawEmptyPile(int x, int y) {
     d_.drawRect(x, y, _cardW, _cardH, GxEPD_BLACK);
 }
 
-}  // namespace sumi
+}  // namespace sagatalu
 
 #endif  // FEATURE_PLUGINS

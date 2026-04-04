@@ -5,11 +5,11 @@
 #include "../drivers/Input.h"
 #include "../drivers/Storage.h"
 #include "EventQueue.h"
-#include "SumiSettings.h"
+#include "SagaTaluSettings.h"
 #include "Result.h"
 #include "Types.h"
 
-namespace sumi {
+namespace sagatalu {
 
 struct Core {
   // === Drivers (thin wrappers, no heap) ===
@@ -45,4 +45,4 @@ struct Core {
 // Global core instance (defined in main.cpp)
 extern Core core;
 
-}  // namespace sumi
+}  // namespace sagatalu

@@ -22,7 +22,7 @@
 #include "PluginRenderer.h"
 #include "../core/MemoryArena.h"
 
-namespace sumi {
+namespace sagatalu {
 
 class SumiBoyEmulator : public PluginInterface {
  public:
@@ -192,6 +192,6 @@ class SumiBoyEmulator : public PluginInterface {
   void freeMemory();
 };
 
-}  // namespace sumi
+}  // namespace sagatalu
 
 #endif  // FEATURE_PLUGINS && FEATURE_GAMES

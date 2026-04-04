@@ -12,11 +12,11 @@
 #include "PluginInterface.h"
 #include "PluginRenderer.h"
 
-namespace sumi {
+namespace sagatalu {
 
 /**
  * @file Images.h
- * @brief Image viewer for Sumi e-reader
+ * @brief Image viewer for SagaTalu e-reader
  * @version 2.0.0
  *
  * Supports BMP, RAW, PNG, and JPG images.
@@ -74,7 +74,7 @@ private:
 
 // === IMPLEMENTATION ===
 
-static const char* IMAGES_TMP_BMP = "/.sumi/cache/_img_tmp.bmp";
+static const char* IMAGES_TMP_BMP = "/.sagatalu/cache/_img_tmp.bmp";
 
 void ImagesApp::init(int screenW, int screenH) {
     _screenW = screenW;
@@ -582,6 +582,6 @@ void ImagesApp::drawRAW(const char* path) {
     f.close();
 }
 
-}  // namespace sumi
+}  // namespace sagatalu
 
 #endif  // FEATURE_PLUGINS

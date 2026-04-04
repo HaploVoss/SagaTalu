@@ -8,7 +8,7 @@
 #include "../content/ContentHandle.h"
 #include "../core/Core.h"
 
-namespace sumi {
+namespace sagatalu {
 
 bool ProgressManager::save(Core& core, const char* cacheDir, ContentType type, const Progress& progress) {
   if (!cacheDir || cacheDir[0] == '\0') {
@@ -137,4 +137,4 @@ ProgressManager::Progress ProgressManager::validate(Core& core, ContentType type
   return validated;
 }
 
-}  // namespace sumi
+}  // namespace sagatalu

@@ -1,7 +1,7 @@
 /**
  * Markdown.h
  *
- * Markdown file handler for SUMI
+ * Markdown file handler for SagaTalu
  * Provides EPUB-like interface for Markdown file handling
  */
 

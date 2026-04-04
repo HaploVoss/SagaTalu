@@ -15,7 +15,7 @@
 #include "../core/MemoryArena.h"
 #include "ThemeManager.h"
 
-namespace sumi {
+namespace sagatalu {
 
 PluginHostState::PluginHostState(GfxRenderer& renderer) : renderer_(renderer), pluginRenderer_(renderer) {}
 
@@ -74,8 +74,8 @@ void PluginHostState::enter(Core& core) {
   if (strcmp(plugin_->name(), "Notes") == 0) {
     if (!ble::isReady()) {
       // Release memory arena to free heap for BLE stack (~40-50KB needed)
-      if (sumi::MemoryArena::isInitialized()) {
-        sumi::MemoryArena::release();
+      if (sagatalu::MemoryArena::isInitialized()) {
+        sagatalu::MemoryArena::release();
         Serial.printf("[PLUGIN_HOST] Arena released for BLE. Free heap: %u\n", ESP.getFreeHeap());
       }
       ble::init();
@@ -347,7 +347,7 @@ StateTransition PluginHostState::update(Core& core) {
       renderer_.displayBuffer(EInkDisplay::FAST_REFRESH);
 
       if (!ble::isReady()) {
-        if (sumi::MemoryArena::isInitialized()) sumi::MemoryArena::release();
+        if (sagatalu::MemoryArena::isInitialized()) sagatalu::MemoryArena::release();
         ble::init();
       }
       ble::startScan(6);
@@ -455,7 +455,7 @@ void PluginHostState::render(Core& core) {
     renderer_.displayBuffer(EInkDisplay::FAST_REFRESH);
     partialCount_ = 0;
   } else {
-    renderer_.setPeriodicRefreshInterval(sumi::core.settings.getPagesPerRefreshValue());
+    renderer_.setPeriodicRefreshInterval(sagatalu::core.settings.getPagesPerRefreshValue());
     partialCount_++;
     if (partialCount_ >= 30) {
       renderer_.displayBuffer(EInkDisplay::FULL_REFRESH);
@@ -468,5 +468,5 @@ void PluginHostState::render(Core& core) {
   core.display.markDirty();
 }
 
-}  // namespace sumi
+}  // namespace sagatalu
 #endif

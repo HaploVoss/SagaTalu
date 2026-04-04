@@ -953,11 +953,8 @@ bool Epub::generateCoverBmp(bool use1BitDithering) const {
     if (!success) {
       Serial.printf("[%lu] [EBP] Failed to generate BMP from cover image\n", millis());
       SdMan.remove(coverPath.c_str());
-      // Create failure marker
-      FsFile marker;
-      if (SdMan.openFileForWrite("EBP", failedMarkerPath, marker)) {
-        marker.close();
-      }
+      // Do NOT write a failure marker here — this is a transient failure
+      // (memory pressure, SD error) that may succeed on the next open.
     } else {
       // Also generate thumbnail immediately (for fallback if cover is too large to render)
       generateThumbBmp();
@@ -966,11 +963,8 @@ bool Epub::generateCoverBmp(bool use1BitDithering) const {
     return success;
   }
 
-  // BMP extraction failed — create failure marker
-  FsFile marker;
-  if (SdMan.openFileForWrite("EBP", failedMarkerPath, marker)) {
-    marker.close();
-  }
+  // BMP extraction failed — transient error, do not write a permanent failure
+  // marker. It will be retried on the next open.
   return false;
 }
 
@@ -999,8 +993,8 @@ bool Epub::readItemContentsToStream(const std::string& itemHref, Print& out, con
   }
 
   // Use MemoryArena::zipBuffer if no dictBuffer provided (avoids 32KB malloc)
-  uint8_t* buffer = dictBuffer ? dictBuffer : sumi::MemoryArena::zipBuffer;
-  if (!buffer) buffer = sumi::MemoryArena::fallbackBuffer;
+  uint8_t* buffer = dictBuffer ? dictBuffer : sagatalu::MemoryArena::zipBuffer;
+  if (!buffer) buffer = sagatalu::MemoryArena::fallbackBuffer;
 
   const std::string path = FsHelpers::normalisePath(itemHref);
   return ZipFile(filepath).readFileToStream(path.c_str(), out, chunkSize, buffer);

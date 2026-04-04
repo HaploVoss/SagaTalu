@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <esp_heap_caps.h>
 
-namespace sumi {
+namespace sagatalu {
 
 uint8_t* MemoryArena::primaryBase_ = nullptr;
 uint8_t* MemoryArena::workBase_ = nullptr;
@@ -224,4 +224,4 @@ ArenaScratch::~ArenaScratch() {
 
 bool ArenaScratch::isValid() const { return MemoryArena::isInitialized() && MemoryArena::scratchBuffer != nullptr; }
 
-}  // namespace sumi
+}  // namespace sagatalu

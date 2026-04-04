@@ -121,7 +121,7 @@
 
 /*
 @@ LUA_32BITS enables Lua with 32-bit integers and 32-bit floats.
-** SUMI: Enabled for ESP32-C3 (32-bit RISC-V, saves RAM)
+** SagaTalu: Enabled for ESP32-C3 (32-bit RISC-V, saves RAM)
 */
 #define LUA_32BITS	1
 
@@ -746,7 +746,7 @@
 ** space (and to reserve some numbers for pseudo-indices).
 ** (It must fit into max(size_t)/32 and max(int)/2.)
 */
-/* SUMI: Reduced from 1000000/15000 for ESP32-C3 memory constraints */
+/* SagaTalu: Reduced from 1000000/15000 for ESP32-C3 memory constraints */
 #define LUAI_MAXSTACK		200
 
 
@@ -763,7 +763,7 @@
 ** of a function in debug information.
 ** CHANGE it if you want a different size.
 */
-/* SUMI: Reduced from 60 for ESP32-C3 */
+/* SagaTalu: Reduced from 60 for ESP32-C3 */
 #define LUA_IDSIZE	32
 
 
@@ -771,7 +771,7 @@
 @@ LUAL_BUFFERSIZE is the initial buffer size used by the lauxlib
 ** buffer system.
 */
-/* SUMI: Reduced from dynamic calculation for ESP32-C3 */
+/* SagaTalu: Reduced from dynamic calculation for ESP32-C3 */
 #define LUAL_BUFFERSIZE   256
 
 

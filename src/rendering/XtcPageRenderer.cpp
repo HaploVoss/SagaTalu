@@ -8,7 +8,7 @@
 #include <cstdlib>
 #include <cstring>
 
-namespace sumi {
+namespace sagatalu {
 
 constexpr uint16_t MAX_PAGE_WIDTH = 2048;
 constexpr uint16_t MAX_PAGE_HEIGHT = 2048;
@@ -250,4 +250,4 @@ void XtcPageRenderer::render2BitGrayscale(const uint8_t* plane1, const uint8_t* 
   }
 }
 
-}  // namespace sumi
+}  // namespace sagatalu

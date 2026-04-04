@@ -21,7 +21,7 @@
 #include "ThemeManager.h"
 #include "../assets/sagatalu_home_bg.h"
 
-namespace sumi {
+namespace sagatalu {
 
 HomeState::HomeState(GfxRenderer& renderer) : renderer_(renderer) {}
 
@@ -31,7 +31,7 @@ void HomeState::enter(Core& core) {
   Serial.println("[HOME] Entering");
   core_ = &core;  // Store for theme loading
 
-  // Enable sumi-e art background
+  // Enable sagatalu-e art background
   view_.useArtBackground = true;
 
   // Load last book info if content is still open
@@ -110,7 +110,7 @@ void HomeState::loadLastBook(Core& core) {
   }
   
   // Fallback: Open content to get metadata (slower, uses more memory)
-  auto result = core.content.open(savedPath, SUMI_CACHE_DIR);
+  auto result = core.content.open(savedPath, SAGATALU_CACHE_DIR);
   if (result.ok()) {
     const auto& meta = core.content.metadata();
     view_.setBook(meta.title, meta.author, savedPath);
@@ -308,7 +308,7 @@ void HomeState::drawBackground(Core& core) {
     Serial.println("[HOME] Using default PROGMEM theme");
     uint8_t* fb = renderer_.getFrameBuffer();
     if (fb) {
-      // Copy sumi-e art directly into framebuffer (native orientation, zero overhead)
+      // Copy sagatalu-e art directly into framebuffer (native orientation, zero overhead)
       memcpy_P(fb, SagaTaluHomeBg, SUMI_HOME_BG_SIZE);
     }
   } else {
@@ -451,7 +451,7 @@ void HomeState::render(Core& core) {
   view_.needsRender = false;
   core.display.markDirty();
 
-  // First-boot welcome overlay — show once when no .sumi folder exists yet
+  // First-boot welcome overlay — show once when no .sagatalu folder exists yet
   if (core.settings.isFirstBoot) {
     core.settings.isFirstBoot = false;
     delay(2000);  // Let home screen settle before overlaying
@@ -480,10 +480,10 @@ void HomeState::render(Core& core) {
     // Body text
     const char* lines[] = {
       "Saga Talu reads any EPUB, but files",
-      "optimized on sumi.page load faster,",
+      "optimized at haplovoss.github.io/SagaTalu",
       "look sharper, and use less memory.",
       "",
-      "Open sumi.page in Chrome or Edge",
+      "haplovoss.github.io/SagaTalu/convert",
       "to easily convert your files.",
       
     };
@@ -538,4 +538,4 @@ void HomeState::renderCoverToCard() {
 }
 
 
-}  // namespace sumi
+}  // namespace sagatalu

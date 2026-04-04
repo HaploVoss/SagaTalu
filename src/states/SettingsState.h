@@ -14,7 +14,7 @@
 
 class GfxRenderer;
 
-namespace sumi {
+namespace sagatalu {
 
 enum class SettingsScreen : uint8_t {
   Menu,
@@ -174,4 +174,4 @@ class SettingsState : public State {
 #endif
 };
 
-}  // namespace sumi
+}  // namespace sagatalu

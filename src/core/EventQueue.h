@@ -5,7 +5,7 @@
 #include "Result.h"
 #include "Types.h"
 
-namespace sumi {
+namespace sagatalu {
 
 enum class EventType : uint8_t {
   None = 0,
@@ -108,4 +108,4 @@ class EventQueue {
   uint8_t tail_ = 0;
 };
 
-}  // namespace sumi
+}  // namespace sagatalu

@@ -2,7 +2,7 @@
 
 #include "State.h"
 
-namespace sumi {
+namespace sagatalu {
 
 // StartupState handles initial boot and transitions to LegacyState
 // During migration, this immediately transitions to legacy activity system
@@ -17,4 +17,4 @@ class StartupState : public State {
   bool initialized_ = false;
 };
 
-}  // namespace sumi
+}  // namespace sagatalu

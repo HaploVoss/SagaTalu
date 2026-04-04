@@ -2,7 +2,7 @@
 
 /**
  * @file Checkers.h
- * @brief Checkers/Draughts game — ported from SUMI
+ * @brief Checkers/Draughts game — ported from SUMI (SagaTalu)
  */
 
 #include "../config.h"
@@ -17,7 +17,7 @@
 #include "PluginRenderer.h"
 #include "icons/checkers_icons.h"
 
-namespace sumi {
+namespace sagatalu {
 
 enum CheckerPiece : uint8_t { C_EMPTY = 0, C_RED = 1, C_RED_K = 2, C_BLACK = 3, C_BLACK_K = 4 };
 
@@ -271,6 +271,6 @@ class CheckersGame : public PluginInterface {
   }
 };
 
-}  // namespace sumi
+}  // namespace sagatalu
 
 #endif  // FEATURE_PLUGINS && FEATURE_GAMES

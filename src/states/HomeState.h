@@ -8,7 +8,7 @@
 
 class GfxRenderer;
 
-namespace sumi {
+namespace sagatalu {
 
 class HomeState : public State {
  public:
@@ -44,4 +44,4 @@ class HomeState : public State {
   bool pendingOpen_ = false;  // Set by openSelectedBook to trigger Reader transition
 };
 
-}  // namespace sumi
+}  // namespace sagatalu

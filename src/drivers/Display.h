@@ -7,7 +7,7 @@
 
 class EInkDisplay;
 
-namespace sumi {
+namespace sagatalu {
 namespace drivers {
 
 class Display {
@@ -58,4 +58,4 @@ constexpr uint16_t Display::width() { return 800; }
 constexpr uint16_t Display::height() { return 480; }
 
 }  // namespace drivers
-}  // namespace sumi
+}  // namespace sagatalu

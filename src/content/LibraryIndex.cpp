@@ -4,7 +4,7 @@
 
 #include "../core/Core.h"
 
-namespace sumi {
+namespace sagatalu {
 
 // GCC 8.4 requires out-of-class definition for ODR-used static constexpr
 constexpr uint8_t LibraryIndex::VERSION;
@@ -84,7 +84,7 @@ bool LibraryIndex::updateEntry(Core& core, const char* bookPath, uint16_t curren
   
   // Open temp file for write
   FsFile writeFile;
-  auto writeResult = core.storage.openWrite(SUMI_DIR "/library.tmp", writeFile);
+  auto writeResult = core.storage.openWrite(SAGATALU_DIR "/library.tmp", writeFile);
   if (!writeResult.ok()) {
     if (readResult.ok()) readFile.close();
     Serial.println("[LIBIDX] Failed to write library.tmp");
@@ -144,7 +144,7 @@ bool LibraryIndex::updateEntry(Core& core, const char* bookPath, uint16_t curren
   writeFile.sync();
   writeFile.close();
   SdMan.remove(INDEX_PATH);
-  SdMan.rename(SUMI_DIR "/library.tmp", INDEX_PATH);
+  SdMan.rename(SAGATALU_DIR "/library.tmp", INDEX_PATH);
   Serial.printf("[LIBIDX] Updated: hash=%u page=%u/%u (%d entries)\n", hash, currentPage, totalPages, newCount);
   return true;
 }
@@ -245,4 +245,4 @@ bool LibraryIndex::findByHash(Core& core, uint32_t hash, Entry& entry) {
   return false;
 }
 
-}  // namespace sumi
+}  // namespace sagatalu

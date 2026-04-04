@@ -168,25 +168,25 @@ EInkDisplay& display = einkDisplay;
 MappedInputManager& mappedInput = mappedInputManager;
 
 // Core system
-namespace sumi {
+namespace sagatalu {
 Core core;
 }
 
 // State instances (pre-allocated, no heap per transition)
-static sumi::StartupState startupState;
-static sumi::HomeState homeState(renderer);
-static sumi::FileListState fileListState(renderer);
-static sumi::ReaderState readerState(renderer);
-static sumi::SettingsState settingsState(renderer);
-static sumi::SleepState sleepState(renderer);
-static sumi::ErrorState errorState(renderer);
-static sumi::StateMachine stateMachine;
+static sagatalu::StartupState startupState;
+static sagatalu::HomeState homeState(renderer);
+static sagatalu::FileListState fileListState(renderer);
+static sagatalu::ReaderState readerState(renderer);
+static sagatalu::SettingsState settingsState(renderer);
+static sagatalu::SleepState sleepState(renderer);
+static sagatalu::ErrorState errorState(renderer);
+static sagatalu::StateMachine stateMachine;
 
 // Plugin system instances
 #if FEATURE_PLUGINS
-sumi::PluginRenderer pluginRenderer(renderer);
-static sumi::PluginListState pluginListState(renderer);
-sumi::PluginHostState pluginHostState(renderer);
+sagatalu::PluginRenderer pluginRenderer(renderer);
+static sagatalu::PluginListState pluginListState(renderer);
+sagatalu::PluginHostState pluginHostState(renderer);
 #endif
 
 RTC_DATA_ATTR uint16_t rtcPowerButtonDurationMs = 400;
@@ -257,7 +257,7 @@ void verifyWakeupLongPress(esp_reset_reason_t resetReason) {
   // Uses settings directly (not RTC variable) so it works even after a full power cycle
   // where RTC memory is lost. Needed because inputManager.isPressed() may take up to
   // ~500ms to return the correct state after wake-up.
-  if (sumi::core.settings.shortPwrBtn == sumi::Settings::PowerSleep) {
+  if (sagatalu::core.settings.shortPwrBtn == sagatalu::Settings::PowerSleep) {
     Serial.printf("[%lu] [   ] Skipping wakeup verification (short press mode)\n", millis());
     return;
   }
@@ -265,7 +265,7 @@ void verifyWakeupLongPress(esp_reset_reason_t resetReason) {
   // Give the user up to 1000ms to start holding the power button, and must hold for the configured duration
   const auto start = millis();
   bool abort = false;
-  const uint16_t requiredPressDuration = sumi::core.settings.getPowerButtonDuration();
+  const uint16_t requiredPressDuration = sagatalu::core.settings.getPowerButtonDuration();
 
   inputManager.update();
   // Verify the user has actually pressed
@@ -337,18 +337,18 @@ void applyThemeFonts() {
   int* targetFontId = nullptr;
   int builtinFontId = 0;
 
-  switch (sumi::core.settings.fontSize) {
-    case sumi::Settings::FontXSmall:
+  switch (sagatalu::core.settings.fontSize) {
+    case sagatalu::Settings::FontXSmall:
       fontFamilyName = theme.readerFontFamilyXSmall;
       targetFontId = &theme.readerFontIdXSmall;
       builtinFontId = READER_FONT_ID_XSMALL;
       break;
-    case sumi::Settings::FontMedium:
+    case sagatalu::Settings::FontMedium:
       fontFamilyName = theme.readerFontFamilyMedium;
       targetFontId = &theme.readerFontIdMedium;
       builtinFontId = READER_FONT_ID_MEDIUM;
       break;
-    case sumi::Settings::FontLarge:
+    case sagatalu::Settings::FontLarge:
       fontFamilyName = theme.readerFontFamilyLarge;
       targetFontId = &theme.readerFontIdLarge;
       builtinFontId = READER_FONT_ID_LARGE;
@@ -390,10 +390,10 @@ static void setupDirectories() {
   SdMan.mkdir(CONFIG_THEMES_DIR);
   SdMan.mkdir(CONFIG_FONTS_DIR);
 
-  // System directory and cache (also created by SumiSettings::save, but
+  // System directory and cache (also created by SagaTaluSettings::save, but
   // ensure they exist before any settings operations)
-  SdMan.mkdir(SUMI_DIR);
-  SdMan.mkdir(SUMI_CACHE_DIR);
+  SdMan.mkdir(SAGATALU_DIR);
+  SdMan.mkdir(SAGATALU_CACHE_DIR);
 
 #if FEATURE_PLUGINS
   SdMan.mkdir(PLUGINS_NOTES_DIR);
@@ -446,20 +446,20 @@ bool earlyInit() {
     SdMan.rename("/.sumi", "/.sagatalu");
   }
 
-  // Detect first boot (no .sumi folder yet) — used for welcome overlay on home screen
-  sumi::core.settings.isFirstBoot = !SdMan.exists(SUMI_DIR);
+  // Detect first boot (no .sagatalu folder yet) — used for welcome overlay on home screen
+  sagatalu::core.settings.isFirstBoot = !SdMan.exists(SAGATALU_DIR);
 
   // Load settings before wakeup verification - without this, a full power cycle
   // (no USB) resets RTC memory and the short power button setting is ignored
-  sumi::core.settings.loadFromFile();
-  rtcPowerButtonDurationMs = sumi::core.settings.getPowerButtonDuration();
+  sagatalu::core.settings.loadFromFile();
+  rtcPowerButtonDurationMs = sagatalu::core.settings.getPowerButtonDuration();
 
   // If boot loop was detected, also clear any pending transitions in settings
   // to prevent cascading boot issues (e.g., READER mode pointing to a bad file)
   if (bootLoopRecovered) {
-    sumi::core.settings.pendingTransition = 0;
-    sumi::core.settings.transitionReturnTo = 0;
-    sumi::core.settings.saveToFile();
+    sagatalu::core.settings.pendingTransition = 0;
+    sagatalu::core.settings.transitionReturnTo = 0;
+    sagatalu::core.settings.saveToFile();
     Serial.println("[BOOT] Cleared pending transitions after boot loop recovery");
   }
 
@@ -468,7 +468,7 @@ bool earlyInit() {
     verifyWakeupLongPress(wakeup.resetReason);
   }
 
-  Serial.printf("[%lu] [   ] Starting SUMI version " SUMI_VERSION "\n", millis());
+  Serial.printf("[%lu] [   ] Starting SagaTalu version " SAGATALU_VERSION "\n", millis());
 
   // Initialize battery ADC pin with proper attenuation for 0-3.3V range
   analogSetPinAttenuation(BAT_GPIO0, ADC_11db);
@@ -488,7 +488,7 @@ bool earlyInit() {
 
   // Initialize memory arena for image processing and decompression buffers.
   // This must happen before any image/ZIP operations to prevent fragmentation.
-  if (!sumi::MemoryArena::init()) {
+  if (!sagatalu::MemoryArena::init()) {
     showErrorScreen("Memory init failed");
     return false;
   }
@@ -505,28 +505,28 @@ void initSystem() {
                 ESP.getMaxAllocHeap());
 
   // Determine initial state before font loading (XTC content can skip custom fonts)
-  sumi::StateId initialState = sumi::StateId::Home;
+  sagatalu::StateId initialState = sagatalu::StateId::Home;
   bool startInReader = false;
 
   // Check "Last Document" startup behavior for cold-boot reader start
-  if (sumi::core.settings.startupBehavior == sumi::Settings::StartupLastDocument &&
-      sumi::core.settings.lastBookPath[0] != '\0' &&
-      SdMan.exists(sumi::core.settings.lastBookPath)) {
-    Serial.printf("[%lu] [BOOT] 'Last Document' startup: %s\n", millis(), sumi::core.settings.lastBookPath);
+  if (sagatalu::core.settings.startupBehavior == sagatalu::Settings::StartupLastDocument &&
+      sagatalu::core.settings.lastBookPath[0] != '\0' &&
+      SdMan.exists(sagatalu::core.settings.lastBookPath)) {
+    Serial.printf("[%lu] [BOOT] 'Last Document' startup: %s\n", millis(), sagatalu::core.settings.lastBookPath);
     startInReader = true;
-    initialState = sumi::StateId::Reader;
+    initialState = sagatalu::StateId::Reader;
   }
 
   // Detect content type for font optimization (XTC doesn't need custom fonts)
   bool needsCustomFonts = true;
   if (startInReader) {
-    sumi::ContentType contentType = sumi::detectContentType(sumi::core.settings.lastBookPath);
-    needsCustomFonts = (contentType != sumi::ContentType::Xtc);
+    sagatalu::ContentType contentType = sagatalu::detectContentType(sagatalu::core.settings.lastBookPath);
+    needsCustomFonts = (contentType != sagatalu::ContentType::Xtc);
   }
 
   // Initialize theme and font managers
   FONT_MANAGER.init(renderer);
-  THEME_MANAGER.loadTheme(sumi::core.settings.themeName);
+  THEME_MANAGER.loadTheme(sagatalu::core.settings.themeName);
   THEME_MANAGER.createDefaultThemeFiles();
   Serial.printf("[%lu] [   ] Theme loaded: %s\n", millis(), THEME_MANAGER.currentThemeName());
 
@@ -541,7 +541,7 @@ void initSystem() {
   if (!startInReader) {
     ui::BootView bootView;
     bootView.setLogo(SumiLogo, 128, 128);
-    bootView.setVersion(SUMI_VERSION);
+    bootView.setVersion(SAGATALU_VERSION);
     bootView.setStatus("BOOTING");
     ui::render(renderer, THEME, bootView);
   }
@@ -564,72 +564,72 @@ void initSystem() {
 
   // Register available plugins
 #if FEATURE_GAMES
-  sumi::PluginListState::registerPlugin("Chess", "Games", []() -> sumi::PluginInterface* {
-    return new sumi::ChessGame(pluginRenderer);
+  sagatalu::PluginListState::registerPlugin("Chess", "Games", []() -> sagatalu::PluginInterface* {
+    return new sagatalu::ChessGame(pluginRenderer);
   }, CHESS_SAVE_PATH);
-  sumi::PluginListState::registerPlugin("Sudoku", "Games", []() -> sumi::PluginInterface* {
-    return new sumi::SudokuGame(pluginRenderer);
+  sagatalu::PluginListState::registerPlugin("Sudoku", "Games", []() -> sagatalu::PluginInterface* {
+    return new sagatalu::SudokuGame(pluginRenderer);
   }, SUDOKU_SAVE_PATH);
-  sumi::PluginListState::registerPlugin("Minesweeper", "Games", []() -> sumi::PluginInterface* {
-    return new sumi::MinesweeperGame(pluginRenderer);
+  sagatalu::PluginListState::registerPlugin("Minesweeper", "Games", []() -> sagatalu::PluginInterface* {
+    return new sagatalu::MinesweeperGame(pluginRenderer);
   });
-  sumi::PluginListState::registerPlugin("Checkers", "Games", []() -> sumi::PluginInterface* {
-    return new sumi::CheckersGame(pluginRenderer);
+  sagatalu::PluginListState::registerPlugin("Checkers", "Games", []() -> sagatalu::PluginInterface* {
+    return new sagatalu::CheckersGame(pluginRenderer);
   });
-  sumi::PluginListState::registerPlugin("Solitaire", "Games", []() -> sumi::PluginInterface* {
-    return new sumi::SolitaireGame(pluginRenderer);
+  sagatalu::PluginListState::registerPlugin("Solitaire", "Games", []() -> sagatalu::PluginInterface* {
+    return new sagatalu::SolitaireGame(pluginRenderer);
   });
-  sumi::PluginListState::registerPlugin("SumiBoy", "Games", []() -> sumi::PluginInterface* {
-    return new sumi::SumiBoyRomPicker(pluginRenderer);
+  sagatalu::PluginListState::registerPlugin("SumiBoy", "Games", []() -> sagatalu::PluginInterface* {
+    return new sagatalu::SumiBoyRomPicker(pluginRenderer);
   });
 #endif  // FEATURE_GAMES
 
 #if FEATURE_FLASHCARDS
-  sumi::PluginListState::registerPlugin("Flashcards", "Learning", []() -> sumi::PluginInterface* {
-    return new sumi::FlashcardsApp(pluginRenderer);
+  sagatalu::PluginListState::registerPlugin("Flashcards", "Learning", []() -> sagatalu::PluginInterface* {
+    return new sagatalu::FlashcardsApp(pluginRenderer);
   });
 #endif
 
   // Scan SD card for user-created Lua plugins
-  sumi::PluginListState::scanLuaPlugins(pluginRenderer);
+  sagatalu::PluginListState::scanLuaPlugins(pluginRenderer);
 
   Serial.printf("[BOOT] Registered %d plugins (%d built-in + %d Lua)\n",
-                sumi::PluginListState::pluginCount,
-                sumi::PluginListState::pluginCount - sumi::PluginListState::luaPluginCount_,
-                sumi::PluginListState::luaPluginCount_);
+                sagatalu::PluginListState::pluginCount,
+                sagatalu::PluginListState::pluginCount - sagatalu::PluginListState::luaPluginCount_,
+                sagatalu::PluginListState::luaPluginCount_);
 #endif  // FEATURE_PLUGINS
 
   // Initialize core
-  auto result = sumi::core.init();
+  auto result = sagatalu::core.init();
   if (!result.ok()) {
-    Serial.printf("[%lu] [CORE] Init failed: %s\n", millis(), sumi::errorToString(result.err));
+    Serial.printf("[%lu] [CORE] Init failed: %s\n", millis(), sagatalu::errorToString(result.err));
     showErrorScreen("Core init failed");
     return;
   }
 
   Serial.printf("[%lu] [CORE] State machine starting (initial: %s)\n", millis(),
                 startInReader ? "Reader" : "Home");
-  mappedInputManager.setSettings(&sumi::core.settings);
-  ui::setFrontButtonLayout(sumi::core.settings.frontButtonLayout);
+  mappedInputManager.setSettings(&sagatalu::core.settings);
+  ui::setFrontButtonLayout(sagatalu::core.settings.frontButtonLayout);
 
   // Enable periodic half-refresh in non-reader states to clear e-ink ghosting.
   // Reader manages its own counter and disables this on enter.
   if (!startInReader) {
-    renderer.setPeriodicRefreshInterval(sumi::core.settings.getPagesPerRefreshValue());
+    renderer.setPeriodicRefreshInterval(sagatalu::core.settings.getPagesPerRefreshValue());
   }
 
   // Set up reader path if starting in reader
   if (startInReader) {
-    strncpy(sumi::core.buf.path, sumi::core.settings.lastBookPath, sizeof(sumi::core.buf.path) - 1);
-    sumi::core.buf.path[sizeof(sumi::core.buf.path) - 1] = '\0';
-    Serial.printf("[%lu] [BOOT] Opening book: %s\n", millis(), sumi::core.buf.path);
+    strncpy(sagatalu::core.buf.path, sagatalu::core.settings.lastBookPath, sizeof(sagatalu::core.buf.path) - 1);
+    sagatalu::core.buf.path[sizeof(sagatalu::core.buf.path) - 1] = '\0';
+    Serial.printf("[%lu] [BOOT] Opening book: %s\n", millis(), sagatalu::core.buf.path);
   }
 
-  stateMachine.init(sumi::core, initialState);
+  stateMachine.init(sagatalu::core, initialState);
 
   // Force initial render
   Serial.printf("[%lu] [CORE] Forcing initial render\n", millis());
-  stateMachine.update(sumi::core);
+  stateMachine.update(sagatalu::core);
 
   Serial.printf("[%lu] [BOOT] After init - Free heap: %lu, Max block: %lu\n", millis(), ESP.getFreeHeap(),
                 ESP.getMaxAllocHeap());
@@ -662,7 +662,7 @@ void loop() {
   inputManager.update();
 
   // Apply sunlight fading fix setting to renderer (like CrossPoint's fadingFix)
-  renderer.setFadingFix(sumi::core.settings.sunlightFadingFix != 0);
+  renderer.setFadingFix(sagatalu::core.settings.sunlightFadingFix != 0);
 
   if (Serial && millis() - lastMemPrint >= 10000) {
     Serial.printf("[%lu] [MEM] Free: %d bytes, Total: %d bytes, Min Free: %d bytes\n", millis(), ESP.getFreeHeap(),
@@ -671,7 +671,7 @@ void loop() {
   }
 
   // Poll input and push events to queue
-  sumi::core.input.poll();
+  sagatalu::core.input.poll();
 
 #if FEATURE_BLUETOOTH
   // Check BLE inactivity timeout — disconnect and reclaim memory if idle too long
@@ -679,8 +679,8 @@ void loop() {
     Serial.println("[BLE] Timed out, reclaiming memory");
     ble_transfer::deinit();
     ble::deinit();
-    if (!sumi::MemoryArena::isInitialized()) {
-      sumi::MemoryArena::init();
+    if (!sagatalu::MemoryArena::isInitialized()) {
+      sagatalu::MemoryArena::init();
     }
   }
 #endif
@@ -689,14 +689,14 @@ void loop() {
   // Skip if BLE file transfer is active — sleeping during transfer crashes with
   // a FreeRTOS assert (xQueueGenericSend) as the settings state exits while
   // the BLE stack is holding mutexes in its write callbacks.
-  const auto autoSleepTimeout = sumi::core.settings.getAutoSleepTimeoutMs();
-  if (autoSleepTimeout > 0 && sumi::core.input.idleTimeMs() >= autoSleepTimeout) {
+  const auto autoSleepTimeout = sagatalu::core.settings.getAutoSleepTimeoutMs();
+  if (autoSleepTimeout > 0 && sagatalu::core.input.idleTimeMs() >= autoSleepTimeout) {
     if (ble_transfer::isTransferring() || ble_transfer::isConnected()) {
       // Don't sleep — BLE is active. Reset the idle timer by doing nothing
       // (the next input event will reset it naturally).
     } else {
       Serial.printf("[%lu] [SLP] Auto-sleep after %lu ms idle\n", millis(), autoSleepTimeout);
-      stateMachine.init(sumi::core, sumi::StateId::Sleep);
+      stateMachine.init(sagatalu::core, sagatalu::StateId::Sleep);
       return;
     }
   }
@@ -713,8 +713,8 @@ void loop() {
       if (powerHeldSinceMs == 0 || loopGap > 100) {
         powerHeldSinceMs = loopStartTime;
       }
-      if (loopStartTime - powerHeldSinceMs > sumi::core.settings.getPowerButtonDuration()) {
-        stateMachine.init(sumi::core, sumi::StateId::Sleep);
+      if (loopStartTime - powerHeldSinceMs > sagatalu::core.settings.getPowerButtonDuration()) {
+        stateMachine.init(sagatalu::core, sagatalu::StateId::Sleep);
         return;
       }
     } else {
@@ -724,7 +724,7 @@ void loop() {
 
   // Update state machine (handles transitions and rendering)
   const unsigned long activityStartTime = millis();
-  stateMachine.update(sumi::core);
+  stateMachine.update(sagatalu::core);
   const unsigned long activityDuration = millis() - activityStartTime;
 
   const unsigned long loopDuration = millis() - loopStartTime;
@@ -740,7 +740,7 @@ void loop() {
   // Increase delay after idle to save power (~4x less CPU load)
   // Idea: https://github.com/crosspoint-reader/crosspoint-reader/commit/0991782 by @ngxson (https://github.com/ngxson)
   static constexpr unsigned long kIdlePowerSavingMs = 3000;
-  if (sumi::core.input.idleTimeMs() >= kIdlePowerSavingMs) {
+  if (sagatalu::core.input.idleTimeMs() >= kIdlePowerSavingMs) {
     delay(50);
   } else {
     delay(10);

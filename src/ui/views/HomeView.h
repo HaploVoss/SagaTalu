@@ -22,7 +22,7 @@ struct CardDimensions {
   };
 
   static CardDimensions calculate(int screenWidth, int screenHeight) {
-    // Matched to sumi-e art template cover rectangle
+    // Matched to sagatalu-e art template cover rectangle
     const int w = 300;
     const int h = 415;
     const int x = (screenWidth - w) / 2;  // centered: (480-300)/2 = 90

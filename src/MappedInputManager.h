@@ -2,7 +2,7 @@
 
 #include <InputManager.h>
 
-namespace sumi {
+namespace sagatalu {
 struct Settings;
 }
 
@@ -12,7 +12,7 @@ class MappedInputManager {
 
   explicit MappedInputManager(InputManager& inputManager) : inputManager(inputManager), settings_(nullptr) {}
 
-  void setSettings(sumi::Settings* settings) { settings_ = settings; }
+  void setSettings(sagatalu::Settings* settings) { settings_ = settings; }
 
   bool wasPressed(Button button) const;
   bool wasReleased(Button button) const;
@@ -23,6 +23,6 @@ class MappedInputManager {
 
  private:
   InputManager& inputManager;
-  sumi::Settings* settings_;
+  sagatalu::Settings* settings_;
   decltype(InputManager::BTN_BACK) mapButton(Button button) const;
 };

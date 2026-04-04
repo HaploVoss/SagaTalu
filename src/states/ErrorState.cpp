@@ -9,7 +9,7 @@
 #include "../core/BootMode.h"
 #include "ThemeManager.h"
 
-namespace sumi {
+namespace sagatalu {
 
 ErrorState::ErrorState(GfxRenderer& renderer) : renderer_(renderer), needsRender_(true) {}
 
@@ -73,4 +73,4 @@ void ErrorState::render(Core& core) {
   core.display.markDirty();
 }
 
-}  // namespace sumi
+}  // namespace sagatalu

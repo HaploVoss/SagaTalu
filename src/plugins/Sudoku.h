@@ -10,11 +10,11 @@
 #include "PluginInterface.h"
 #include "PluginRenderer.h"
 
-namespace sumi {
+namespace sagatalu {
 
 /**
  * @file Sudoku.h
- * @brief Enhanced Sudoku puzzle game for Sumi e-reader
+ * @brief Enhanced Sudoku puzzle game for SagaTalu e-reader
  * @version 1.0.0
  *
  * Features:
@@ -36,9 +36,9 @@ namespace sumi {
 // =============================================================================
 // Constants
 // =============================================================================
-#define SUDOKU_SAVE_PATH "/.sumi/sudoku_save.bin"
-#define SUDOKU_SETTINGS_PATH "/.sumi/sudoku_settings.bin"
-#define SUDOKU_STATS_PATH "/.sumi/sudoku_stats.bin"
+#define SUDOKU_SAVE_PATH "/.sagatalu/sudoku_save.bin"
+#define SUDOKU_SETTINGS_PATH "/.sagatalu/sudoku_settings.bin"
+#define SUDOKU_STATS_PATH "/.sagatalu/sudoku_stats.bin"
 
 enum SudokuDifficulty : uint8_t { 
     DIFF_EASY = 0,      // 38 clues
@@ -227,7 +227,7 @@ public:
     }
     
     void saveSettings() {
-        SdMan.mkdir("/.sumi");
+        SdMan.mkdir("/.sagatalu");
         FsFile f = SdMan.open(SUDOKU_SETTINGS_PATH, (O_WRONLY | O_CREAT | O_TRUNC));
         if (f) {
             f.write((uint8_t*)&settings, sizeof(SudokuSettings));
@@ -246,7 +246,7 @@ public:
     }
     
     void saveStats() {
-        SdMan.mkdir("/.sumi");
+        SdMan.mkdir("/.sagatalu");
         FsFile f = SdMan.open(SUDOKU_STATS_PATH, (O_WRONLY | O_CREAT | O_TRUNC));
         if (f) {
             f.write((uint8_t*)&stats, sizeof(SudokuStats));
@@ -282,7 +282,7 @@ public:
     // Save/Load Game
     // ==========================================================================
     bool saveGame() {
-        SdMan.mkdir("/.sumi");
+        SdMan.mkdir("/.sagatalu");
         FsFile f = SdMan.open(SUDOKU_SAVE_PATH, (O_WRONLY | O_CREAT | O_TRUNC));
         if (!f) return false;
         
@@ -1665,6 +1665,6 @@ public:
   PluginRenderer& d_;
 };
 
-}  // namespace sumi
+}  // namespace sagatalu
 
 #endif  // FEATURE_PLUGINS

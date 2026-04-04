@@ -2,7 +2,7 @@
 
 #include "../core/Types.h"
 
-namespace sumi {
+namespace sagatalu {
 
 struct Core;
 
@@ -27,4 +27,4 @@ class State {
   virtual StateId id() const = 0;
 };
 
-}  // namespace sumi
+}  // namespace sagatalu

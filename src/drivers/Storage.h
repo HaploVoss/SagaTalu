@@ -8,7 +8,7 @@
 // Forward declare SdFat types
 class FsFile;
 
-namespace sumi {
+namespace sagatalu {
 namespace drivers {
 
 class Storage {
@@ -37,4 +37,4 @@ class Storage {
 };
 
 }  // namespace drivers
-}  // namespace sumi
+}  // namespace sagatalu

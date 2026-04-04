@@ -47,6 +47,7 @@ class PageImage final : public PageElement {
       : PageElement(xPos, yPos), block(std::move(block)) {}
   PageElementTag getTag() const override { return TAG_PageImage; }
   uint16_t getImageHeight() const { return block->getHeight(); }
+  uint16_t getImageWidth() const { return block->getWidth(); }
   void render(GfxRenderer& renderer, int fontId, int xOffset, int yOffset, bool black = true) override;
   bool serialize(FsFile& file) override;
   static std::unique_ptr<PageImage> deserialize(FsFile& file);
@@ -74,4 +75,13 @@ class Page {
     }
     return maxBottom;
   }
+  // Returns true if this page contains only image elements (no text lines).
+  // Used to render images in portrait orientation even in landscape reading mode.
+  bool isImageOnly() const {
+  if (elements.empty()) return false;
+  for (const auto& el : elements) {
+    if (el->getTag() == TAG_PageLine) return false;
+  }
+  return true;
+}
 };

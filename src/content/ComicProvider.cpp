@@ -6,7 +6,7 @@
 #include <functional>
 #include <string>
 
-namespace sumi {
+namespace sagatalu {
 
 Result<void> ComicProvider::open(const char* path, const char* cacheDir) {
   close();
@@ -57,4 +57,4 @@ void ComicProvider::close() {
 
 uint32_t ComicProvider::pageCount() const { return reader.pageCount(); }
 
-}  // namespace sumi
+}  // namespace sagatalu

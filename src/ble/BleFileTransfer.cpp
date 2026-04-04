@@ -512,7 +512,7 @@ void init() {
     Serial.println("[BLE-FT] INIT FILE TRANSFER SERVICE");
     Serial.printf("[BLE-FT] Heap: %lu\n", (unsigned long)ESP.getFreeHeap());
 
-    NimBLEDevice::init("SUMI");
+    NimBLEDevice::init("SagaTalu");
     NimBLEDevice::setSecurityAuth(true, true, true);
     NimBLEDevice::setPower(3);
 
@@ -547,7 +547,7 @@ void init() {
     _service->start();
 
     _advertising_ptr = NimBLEDevice::getAdvertising();
-    _advertising_ptr->setName("SUMI");
+    _advertising_ptr->setName("SagaTalu");
     _advertising_ptr->addServiceUUID(FILE_TRANSFER_SERVICE_UUID);
     _advertising_ptr->setAppearance(0x0480);  // Generic Media Player — shows device type in OS
     _advertising_ptr->setMinInterval(0x20);
@@ -594,7 +594,7 @@ void startAdvertising() {
     if (_advertising_ptr) {
         _advertising_ptr->start();
         _advertising = true;
-        Serial.println("[BLE-FT] Advertising as 'SUMI'");
+        Serial.println("[BLE-FT] Advertising as 'SagaTalu'");
     }
 }
 

@@ -5,7 +5,7 @@
 #include <string>
 
 #include "../core/Types.h"
-#include "core/SumiSettings.h"
+#include "core/SagaTaluSettings.h"
 
 namespace ui {
 
@@ -74,7 +74,7 @@ void enumValue(const GfxRenderer& r, const Theme& t, int y, const char* label, c
 }
 
 void buttonBar(const GfxRenderer& r, const Theme& t, const char* b1, const char* b2, const char* b3, const char* b4) {
-  if (frontButtonLayout_ == sumi::Settings::FrontLRBC) {
+  if (frontButtonLayout_ == sagatalu::Settings::FrontLRBC) {
     r.drawButtonHints(t.uiFontId, b3, b4, b1, b2, t.primaryTextBlack);
   } else {
     r.drawButtonHints(t.uiFontId, b1, b2, b3, b4, t.primaryTextBlack);
@@ -82,7 +82,7 @@ void buttonBar(const GfxRenderer& r, const Theme& t, const char* b1, const char*
 }
 
 void buttonBar(const GfxRenderer& r, const Theme& t, const ButtonBar& buttons) {
-  if (frontButtonLayout_ == sumi::Settings::FrontLRBC) {
+  if (frontButtonLayout_ == sagatalu::Settings::FrontLRBC) {
     r.drawButtonHints(t.uiFontId, buttons.labels[2], buttons.labels[3], buttons.labels[0], buttons.labels[1],
                       t.primaryTextBlack);
   } else {
@@ -476,7 +476,7 @@ void fileEntry(const GfxRenderer& r, const Theme& t, int y, const char* name, bo
   const bool showProgress = !isDir && !unsupported && progressPercent >= 0;
   const bool showConvert = !isDir && unsupported;
   const char* hintLabel = !isDir && !unsupported && contentHint != 0
-                              ? sumi::contentHintLabel(static_cast<sumi::ContentHint>(contentHint))
+                              ? sagatalu::contentHintLabel(static_cast<sagatalu::ContentHint>(contentHint))
                               : "";
   const bool showHint = hintLabel[0] != '\0';
   char tagText[24] = {};

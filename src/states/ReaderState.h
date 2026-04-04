@@ -18,7 +18,7 @@ class PageCache;
 class Page;
 struct RenderConfig;
 
-namespace sumi {
+namespace sagatalu {
 
 // Forward declarations
 class Core;
@@ -176,4 +176,4 @@ class ReaderState : public State {
   StateId exitTarget_ = StateId::Reader;  // Set by exitToUI to trigger transition
 };
 
-}  // namespace sumi
+}  // namespace sagatalu

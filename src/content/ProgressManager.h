@@ -4,7 +4,7 @@
 
 #include "ContentTypes.h"
 
-namespace sumi {
+namespace sagatalu {
 
 struct Core;
 
@@ -38,4 +38,4 @@ class ProgressManager {
   static Progress validate(Core& core, ContentType type, const Progress& progress);
 };
 
-}  // namespace sumi
+}  // namespace sagatalu

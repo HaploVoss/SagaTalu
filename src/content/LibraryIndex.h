@@ -3,11 +3,11 @@
 #include <cstdint>
 #include "../config.h"
 
-namespace sumi {
+namespace sagatalu {
 
 struct Core;
 
-// LibraryIndex - Lightweight per-book progress index stored in /.sumi/library.bin
+// LibraryIndex - Lightweight per-book progress index stored in /.sagatalu/library.bin
 // Used by the file browser to show progress bars and content type icons.
 // Updated by the reader whenever progress is saved.
 //
@@ -52,7 +52,7 @@ class LibraryIndex {
  private:
   static constexpr uint8_t VERSION = 2;  // v2: added contentHint byte
   static constexpr int MAX_ENTRIES = 200;
-  static constexpr const char* INDEX_PATH = SUMI_DIR "/library.bin";
+  static constexpr const char* INDEX_PATH = SAGATALU_DIR "/library.bin";
 };
 
-}  // namespace sumi
+}  // namespace sagatalu

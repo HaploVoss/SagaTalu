@@ -1,7 +1,7 @@
 /**
  * Markdown.cpp
  *
- * Markdown file handler implementation for SUMI
+ * Markdown file handler implementation for SagaTalu
  */
 
 #include "Markdown.h"

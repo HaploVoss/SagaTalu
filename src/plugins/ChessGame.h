@@ -10,11 +10,11 @@
 #include "PluginInterface.h"
 #include "PluginRenderer.h"
 
-namespace sumi {
+namespace sagatalu {
 
 /**
  * @file ChessGame.h
- * @brief Full-featured Chess for Sumi e-reader
+ * @brief Full-featured Chess for SagaTalu e-reader
  * @version 1.0.0
  *
  * Features:
@@ -252,9 +252,9 @@ struct MoveRecord {
 // =============================================================================
 // Save Data Structures
 // =============================================================================
-#define CHESS_SAVE_PATH "/.sumi/chess_save.bin"
-#define CHESS_SETTINGS_PATH "/.sumi/chess_settings.bin"
-#define CHESS_STATS_PATH "/.sumi/chess_stats.bin"
+#define CHESS_SAVE_PATH "/.sagatalu/chess_save.bin"
+#define CHESS_SETTINGS_PATH "/.sagatalu/chess_settings.bin"
+#define CHESS_STATS_PATH "/.sagatalu/chess_stats.bin"
 
 struct ChessSaveData {
     uint32_t magic = 0x43485332;  // "CHS2"
@@ -454,7 +454,7 @@ public:
     }
     
     void saveSettings() {
-        SdMan.mkdir("/.sumi");
+        SdMan.mkdir("/.sagatalu");
         FsFile f = SdMan.open(CHESS_SETTINGS_PATH, (O_WRONLY | O_CREAT | O_TRUNC));
         if (f) {
             f.write((uint8_t*)&settings, sizeof(ChessSettings));
@@ -473,7 +473,7 @@ public:
     }
     
     void saveStats() {
-        SdMan.mkdir("/.sumi");
+        SdMan.mkdir("/.sagatalu");
         FsFile f = SdMan.open(CHESS_STATS_PATH, (O_WRONLY | O_CREAT | O_TRUNC));
         if (f) {
             f.write((uint8_t*)&stats, sizeof(ChessStats));
@@ -493,7 +493,7 @@ public:
     // Game Save/Load
     // ==========================================================================
     bool saveGame() {
-        SdMan.mkdir("/.sumi");
+        SdMan.mkdir("/.sagatalu");
         FsFile f = SdMan.open(CHESS_SAVE_PATH, (O_WRONLY | O_CREAT | O_TRUNC));
         if (!f) return false;
         
@@ -2661,6 +2661,6 @@ public:
   PluginRenderer& d_;
 };
 
-}  // namespace sumi
+}  // namespace sagatalu
 
 #endif  // FEATURE_PLUGINS

@@ -23,7 +23,7 @@
 #include "PluginListState.h"
 #endif
 
-namespace sumi {
+namespace sagatalu {
 
 FileListState::FileListState(GfxRenderer& renderer)
     : renderer_(renderer),
@@ -345,9 +345,9 @@ void FileListState::showConvertMessage(Core& core, const char* filename) {
   y += lineH + 12;
 
   // Body message
-  renderer_.drawCenteredText(theme.uiFontId, y, "This format isn't native to SUMI.", theme.primaryTextBlack);
+  renderer_.drawCenteredText(theme.uiFontId, y, "This format is not native to SagaTalu.", theme.primaryTextBlack);
   y += lineH + 4;
-  renderer_.drawCenteredText(theme.uiFontId, y, "Head over to sumi.page and drop", theme.primaryTextBlack);
+  renderer_.drawCenteredText(theme.uiFontId, y, "Head over to haplovoss.github.io/SagaTalu", theme.primaryTextBlack);
   y += lineH + 2;
   renderer_.drawCenteredText(theme.uiFontId, y, "it in the converter. It'll convert", theme.primaryTextBlack);
   y += lineH + 2;
@@ -359,7 +359,7 @@ void FileListState::showConvertMessage(Core& core, const char* filename) {
   y += lineH + 20;
 
   // URL
-  renderer_.drawCenteredText(theme.readerFontId, y, "sumi.page/convert", theme.primaryTextBlack, BOLD);
+  renderer_.drawCenteredText(theme.readerFontId, y, "SagaTalu/convert", theme.primaryTextBlack, BOLD);
 
   renderer_.displayBuffer();
 }
@@ -729,4 +729,4 @@ int FileListState::getPageStartIndex() const {
   return (selectedIndex_ / pageItems) * pageItems;
 }
 
-}  // namespace sumi
+}  // namespace sagatalu

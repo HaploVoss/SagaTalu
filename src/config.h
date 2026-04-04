@@ -77,10 +77,10 @@
 #define SMALL_FONT_ID 1482513144
 
 // System directory for settings and cache
-#define SUMI_DIR "/.sagatalu"
-#define SUMI_CACHE_DIR SUMI_DIR "/cache"
-#define SUMI_SETTINGS_FILE SUMI_DIR "/settings.bin"
-#define SUMI_STATE_FILE SUMI_DIR "/state.bin"
+#define SAGATALU_DIR "/.sagatalu"
+#define SAGATALU_CACHE_DIR SAGATALU_DIR "/cache"
+#define SAGATALU_SETTINGS_FILE SAGATALU_DIR "/settings.bin"
+#define SAGATALU_STATE_FILE SAGATALU_DIR "/state.bin"
 
 // Thumbnail dimensions for home screen
 #define THUMB_WIDTH 320

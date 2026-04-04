@@ -1,7 +1,7 @@
 /**
  * Txt.cpp
  *
- * Plain text file handler implementation for SUMI
+ * Plain text file handler implementation for SagaTalu
  */
 
 #include "Txt.h"

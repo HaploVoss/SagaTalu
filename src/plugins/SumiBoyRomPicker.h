@@ -20,7 +20,7 @@
 
 #include <vector>
 
-namespace sumi {
+namespace sagatalu {
 
 class SumiBoyRomPicker : public PluginInterface {
  public:
@@ -282,6 +282,6 @@ class SumiBoyRomPicker : public PluginInterface {
   }
 };
 
-}  // namespace sumi
+}  // namespace sagatalu
 
 #endif  // FEATURE_PLUGINS && FEATURE_GAMES

@@ -28,12 +28,12 @@
 #endif
 
 // Forward declaration for Notes direct launch
-extern sumi::PluginHostState pluginHostState;
-extern sumi::PluginRenderer pluginRenderer;
+extern sagatalu::PluginHostState pluginHostState;
+extern sagatalu::PluginRenderer pluginRenderer;
 // createNotesApp is defined in Notes.h, included via main.cpp
-extern sumi::PluginInterface* createNotesApp(sumi::PluginRenderer& r);
+extern sagatalu::PluginInterface* createNotesApp(sagatalu::PluginRenderer& r);
 
-namespace sumi {
+namespace sagatalu {
 
 SettingsState::SettingsState(GfxRenderer& renderer)
     : renderer_(renderer),
@@ -93,18 +93,18 @@ void SettingsState::exit(Core& core) {
   
   // Re-allocate memory arena if it was released for BLE scan/pairing, file transfer, or plugins.
 #if FEATURE_BLUETOOTH
-  if (!sumi::MemoryArena::isInitialized()) {
+  if (!sagatalu::MemoryArena::isInitialized()) {
     if (!ble::isConnected()) {
       ble::deinit();  // Free BLE stack memory before arena allocation
     }
     Serial.printf("[SETTINGS] Re-allocating memory arena (BLE %s)\n",
                   ble::isConnected() ? "HID connected" : "not connected");
-    sumi::MemoryArena::init();
+    sagatalu::MemoryArena::init();
   }
 #else
-  if (!sumi::MemoryArena::isInitialized()) {
+  if (!sagatalu::MemoryArena::isInitialized()) {
     Serial.println("[SETTINGS] Re-allocating memory arena");
-    sumi::MemoryArena::init();
+    sagatalu::MemoryArena::init();
   }
 #endif
 }
@@ -320,8 +320,8 @@ StateTransition SettingsState::update(Core& core) {
 
   if (goNotes_) {
     goNotes_ = false;
-    static sumi::PluginRenderer* s_pr = &pluginRenderer;
-    pluginHostState.setPluginFactory([]() -> sumi::PluginInterface* {
+    static sagatalu::PluginRenderer* s_pr = &pluginRenderer;
+    pluginHostState.setPluginFactory([]() -> sagatalu::PluginInterface* {
       return createNotesApp(*s_pr);
     });
     pluginHostState.setReturnState(StateId::Settings);
@@ -645,15 +645,15 @@ void SettingsState::handleConfirm(Core& core) {
         }
         Serial.println("[BLE] File transfer disabled");
         // Re-allocate memory arena when BLE is disabled
-        if (!sumi::MemoryArena::isInitialized()) {
+        if (!sagatalu::MemoryArena::isInitialized()) {
           Serial.println("[BLE] Re-allocating memory arena");
-          sumi::MemoryArena::init();
+          sagatalu::MemoryArena::init();
         }
       } else {
         // Release memory arena to free up heap for BLE stack
-        if (sumi::MemoryArena::isInitialized()) {
+        if (sagatalu::MemoryArena::isInitialized()) {
           Serial.println("[BLE] Releasing memory arena for BLE stack");
-          sumi::MemoryArena::release();
+          sagatalu::MemoryArena::release();
         }
         ble_transfer::init();
         ble_transfer::startAdvertising();
@@ -790,13 +790,13 @@ void SettingsState::handleConfirm(Core& core) {
           ui::centeredMessage(renderer_, THEME, THEME.uiFontId, "Clearing cache...");
 
           // Clear cache directory (covers, thumbnails, section caches, progress)
-          core.storage.rmdir(SUMI_CACHE_DIR);
+          core.storage.rmdir(SAGATALU_CACHE_DIR);
           
           // Clear recent books list
-          core.storage.remove("/.sumi/recent.bin");
+          core.storage.remove("/.sagatalu/recent.bin");
           
           // Clear library index
-          core.storage.remove("/.sumi/library.bin");
+          core.storage.remove("/.sagatalu/library.bin");
           
           // Clear last book path from settings
           core.settings.lastBookPath[0] = '\0';
@@ -825,7 +825,7 @@ void SettingsState::handleConfirm(Core& core) {
           ui::centeredMessage(renderer_, THEME, THEME.uiFontId, "Resetting device...");
 
           LittleFS.format();
-          core.storage.rmdir(SUMI_DIR);
+          core.storage.rmdir(SAGATALU_DIR);
 
           ui::centeredMessage(renderer_, THEME, THEME.uiFontId, "Done. Restarting...");
           vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -905,20 +905,14 @@ void SettingsState::loadReaderSettings() {
   // Index 6: Paragraph Alignment (0=Justified, 1=Left, 2=Center, 3=Right)
   readerView_.values[6] = settings.paragraphAlignment;
 
-  // Index 7: Hyphenation (toggle)
-  readerView_.values[7] = settings.hyphenation;
+  // Index 7: Show Images (toggle)  [was 8 before Hyphenation was removed]
+  readerView_.values[7] = settings.showImages;
 
-  // Index 8: Show Images (toggle)
-  readerView_.values[8] = settings.showImages;
+  // Index 8: Status Bar (0=None, 1=Show)  [was 10 before Hyphenation+Tables removed]
+  readerView_.values[8] = settings.statusBar;
 
-  // Index 9: Show Tables (toggle)
-  readerView_.values[9] = settings.showTables;
-
-  // Index 10: Status Bar (0=None, 1=Show)
-  readerView_.values[10] = settings.statusBar;
-
-  // Index 11: Reading Orientation (0=Portrait, 1=Landscape CW, 2=Inverted, 3=Landscape CCW)
-  readerView_.values[11] = settings.orientation;
+  // Index 9: Reading Orientation (0=Portrait, 1=Landscape CW, 2=Inverted, 3=Landscape CCW)
+  readerView_.values[9] = settings.orientation;
 
   // Reset scroll to top
   readerView_.scrollOffset = 0;
@@ -959,20 +953,14 @@ void SettingsState::saveReaderSettings() {
   // Index 6: Paragraph Alignment
   settings.paragraphAlignment = readerView_.values[6];
 
-  // Index 7: Hyphenation
-  settings.hyphenation = readerView_.values[7];
+  // Index 7: Show Images
+  settings.showImages = readerView_.values[7];
 
-  // Index 8: Show Images
-  settings.showImages = readerView_.values[8];
+  // Index 8: Status Bar
+  settings.statusBar = readerView_.values[8];
 
-  // Index 9: Show Tables
-  settings.showTables = readerView_.values[9];
-
-  // Index 10: Status Bar
-  settings.statusBar = readerView_.values[10];
-
-  // Index 11: Reading Orientation
-  settings.orientation = readerView_.values[11];
+  // Index 9: Reading Orientation
+  settings.orientation = readerView_.values[9];
 }
 
 void SettingsState::loadHomeArtSettings() {
@@ -1152,7 +1140,7 @@ void SettingsState::populateSystemInfo() {
   infoView_.clear();
 
   // Firmware version
-  infoView_.addField("Version", SUMI_VERSION);
+  infoView_.addField("Version", SAGATALU_VERSION);
 
   // Uptime
   const unsigned long uptimeSeconds = millis() / 1000;
@@ -1673,11 +1661,11 @@ void SettingsState::renderBleTransfer() {
     drawDivider(y);
     y += 28;
     
-    renderer_.drawCenteredText(t.menuFontId, y, "Open sumi.page in Chrome/Edge,", t.secondaryTextBlack);
+    renderer_.drawCenteredText(t.menuFontId, y, "Open haplovoss.github.io/SagaTalu", t.secondaryTextBlack);
     y += mdH;
     renderer_.drawCenteredText(t.menuFontId, y, "convert your files, then tap", t.secondaryTextBlack);
     y += mdH;
-    renderer_.drawCenteredText(t.menuFontId, y, "Send to SUMI.", t.primaryTextBlack, EpdFontFamily::BOLD);
+    renderer_.drawCenteredText(t.menuFontId, y, "Send to SagaTalu.", t.primaryTextBlack, EpdFontFamily::BOLD);
     y += mdH + 32;
     
     renderer_.drawCenteredText(t.smallFontId, y, "Press OK to disable", t.secondaryTextBlack);
@@ -1700,8 +1688,8 @@ void SettingsState::enterBluetooth() {
 
   // Release arena before BLE init — NimBLE stack needs large contiguous heap
   // for scanning/pairing. Arena gets re-allocated on settings exit.
-  if (sumi::MemoryArena::isInitialized()) {
-    sumi::MemoryArena::release();
+  if (sagatalu::MemoryArena::isInitialized()) {
+    sagatalu::MemoryArena::release();
   }
   ble::init();
 
@@ -1868,7 +1856,7 @@ void SettingsState::enterWifiTransfer() {
   Serial.println("[WIFI] Entering WiFi transfer screen");
 
   // Free as much RAM as possible before starting WiFi
-  sumi::MemoryArena::release();
+  sagatalu::MemoryArena::release();
 
 #if FEATURE_BLUETOOTH
   // BLE and WiFi share the radio — deinit BLE to free ~60KB for WiFi stack
@@ -1961,8 +1949,8 @@ void SettingsState::exitWifiTransfer() {
   Serial.printf("[WIFI] Free heap after WiFi stop: %u\n", ESP.getFreeHeap());
 
   // Restore memory arena
-  if (!sumi::MemoryArena::isInitialized()) {
-    sumi::MemoryArena::init();
+  if (!sagatalu::MemoryArena::isInitialized()) {
+    sagatalu::MemoryArena::init();
   }
 
 #if FEATURE_BLUETOOTH
@@ -1992,7 +1980,7 @@ void SettingsState::enterWifiSetup() {
     Serial.println("[WIFI] BLE deinit for WiFi setup");
   }
 #endif
-  sumi::MemoryArena::release();
+  sagatalu::MemoryArena::release();
   delay(100);
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
@@ -2319,8 +2307,8 @@ void SettingsState::exitWifiSetup() {
   WiFi.scanDelete();
   WiFi.disconnect(true);
   WiFi.mode(WIFI_OFF);
-  if (!sumi::MemoryArena::isInitialized()) {
-    sumi::MemoryArena::init();
+  if (!sagatalu::MemoryArena::isInitialized()) {
+    sagatalu::MemoryArena::init();
   }
 #if FEATURE_BLUETOOTH
   if (!ble::isReady()) {
@@ -2330,4 +2318,4 @@ void SettingsState::exitWifiSetup() {
 #endif
 }
 
-}  // namespace sumi
+}  // namespace sagatalu

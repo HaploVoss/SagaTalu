@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <cstring>
 
-namespace sumi {
+namespace sagatalu {
 
 // Button identifiers
 enum class Button : uint8_t {
@@ -27,7 +27,7 @@ enum class ContentType : uint8_t {
   Comic,
 };
 
-// Content hint from EPUB dc:subject (set by sumi.page tools)
+// Content hint from EPUB dc:subject (set by sumi.page/SagaTalu converter tools)
 // Used for file browser icons and auto-configuration of reader settings.
 enum class ContentHint : uint8_t {
   Generic = 0,      // Unknown / third-party EPUB (no sumi: tag)
@@ -97,4 +97,4 @@ constexpr uint16_t Height = 800;
 constexpr size_t BufferSize = (Width * Height) / 8;  // 1-bit display
 }  // namespace Screen
 
-}  // namespace sumi
+}  // namespace sagatalu

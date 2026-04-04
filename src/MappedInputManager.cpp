@@ -1,59 +1,59 @@
 #include "MappedInputManager.h"
 
-#include "core/SumiSettings.h"
+#include "core/SagaTaluSettings.h"
 
 decltype(InputManager::BTN_BACK) MappedInputManager::mapButton(const Button button) const {
-  const auto frontLayout = settings_ ? static_cast<sumi::Settings::FrontButtonLayout>(settings_->frontButtonLayout)
-                                     : sumi::Settings::FrontBCLR;
-  const auto sideLayout = settings_ ? static_cast<sumi::Settings::SideButtonLayout>(settings_->sideButtonLayout)
-                                    : sumi::Settings::PrevNext;
+  const auto frontLayout = settings_ ? static_cast<sagatalu::Settings::FrontButtonLayout>(settings_->frontButtonLayout)
+                                     : sagatalu::Settings::FrontBCLR;
+  const auto sideLayout = settings_ ? static_cast<sagatalu::Settings::SideButtonLayout>(settings_->sideButtonLayout)
+                                    : sagatalu::Settings::PrevNext;
 
   switch (button) {
     case Button::Back:
       switch (frontLayout) {
-        case sumi::Settings::FrontLRBC:
+        case sagatalu::Settings::FrontLRBC:
           return InputManager::BTN_LEFT;
-        case sumi::Settings::FrontBCLR:
+        case sagatalu::Settings::FrontBCLR:
         default:
           return InputManager::BTN_BACK;
       }
     case Button::Confirm:
       switch (frontLayout) {
-        case sumi::Settings::FrontLRBC:
+        case sagatalu::Settings::FrontLRBC:
           return InputManager::BTN_RIGHT;
-        case sumi::Settings::FrontBCLR:
+        case sagatalu::Settings::FrontBCLR:
         default:
           return InputManager::BTN_CONFIRM;
       }
     case Button::Left:
       switch (frontLayout) {
-        case sumi::Settings::FrontLRBC:
+        case sagatalu::Settings::FrontLRBC:
           return InputManager::BTN_BACK;
-        case sumi::Settings::FrontBCLR:
+        case sagatalu::Settings::FrontBCLR:
         default:
           return InputManager::BTN_LEFT;
       }
     case Button::Right:
       switch (frontLayout) {
-        case sumi::Settings::FrontLRBC:
+        case sagatalu::Settings::FrontLRBC:
           return InputManager::BTN_CONFIRM;
-        case sumi::Settings::FrontBCLR:
+        case sagatalu::Settings::FrontBCLR:
         default:
           return InputManager::BTN_RIGHT;
       }
     case Button::Up:
       switch (sideLayout) {
-        case sumi::Settings::NextPrev:
+        case sagatalu::Settings::NextPrev:
           return InputManager::BTN_DOWN;
-        case sumi::Settings::PrevNext:
+        case sagatalu::Settings::PrevNext:
         default:
           return InputManager::BTN_UP;
       }
     case Button::Down:
       switch (sideLayout) {
-        case sumi::Settings::NextPrev:
+        case sagatalu::Settings::NextPrev:
           return InputManager::BTN_UP;
-        case sumi::Settings::PrevNext:
+        case sagatalu::Settings::PrevNext:
         default:
           return InputManager::BTN_DOWN;
       }
@@ -61,17 +61,17 @@ decltype(InputManager::BTN_BACK) MappedInputManager::mapButton(const Button butt
       return InputManager::BTN_POWER;
     case Button::PageBack:
       switch (sideLayout) {
-        case sumi::Settings::NextPrev:
+        case sagatalu::Settings::NextPrev:
           return InputManager::BTN_DOWN;
-        case sumi::Settings::PrevNext:
+        case sagatalu::Settings::PrevNext:
         default:
           return InputManager::BTN_UP;
       }
     case Button::PageForward:
       switch (sideLayout) {
-        case sumi::Settings::NextPrev:
+        case sagatalu::Settings::NextPrev:
           return InputManager::BTN_UP;
-        case sumi::Settings::PrevNext:
+        case sagatalu::Settings::PrevNext:
         default:
           return InputManager::BTN_DOWN;
       }

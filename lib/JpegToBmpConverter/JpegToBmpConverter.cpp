@@ -425,16 +425,16 @@ bool JpegToBmpConverter::jpegFileToBmpStreamInternal(FsFile& jpegFile, Print& bm
   // Use arena-backed memory when available to avoid heap fragmentation
   if (!quickMode) {
     if (oneBit) {
-      if (sumi::MemoryArena::isInitialized() && sumi::MemoryArena::ditherRegion) {
-        g_1bitDitherer = new Atkinson1BitDitherer(outWidth, sumi::MemoryArena::ditherRegion,
-                                                   sumi::MemoryArena::DITHER_REGION_SIZE);
+      if (sagatalu::MemoryArena::isInitialized() && sagatalu::MemoryArena::ditherRegion) {
+        g_1bitDitherer = new Atkinson1BitDitherer(outWidth, sagatalu::MemoryArena::ditherRegion,
+                                                   sagatalu::MemoryArena::DITHER_REGION_SIZE);
       } else {
         g_1bitDitherer = new Atkinson1BitDitherer(outWidth);
       }
     } else {
-      if (sumi::MemoryArena::isInitialized() && sumi::MemoryArena::ditherRegion) {
-        g_ditherer = new AtkinsonDitherer(outWidth, sumi::MemoryArena::ditherRegion,
-                                          sumi::MemoryArena::DITHER_REGION_SIZE);
+      if (sagatalu::MemoryArena::isInitialized() && sagatalu::MemoryArena::ditherRegion) {
+        g_ditherer = new AtkinsonDitherer(outWidth, sagatalu::MemoryArena::ditherRegion,
+                                          sagatalu::MemoryArena::DITHER_REGION_SIZE);
       } else {
         g_ditherer = new AtkinsonDitherer(outWidth);
       }

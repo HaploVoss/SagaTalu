@@ -179,7 +179,7 @@ navigate('/');
 </html>
 )rawhtml";
 
-namespace sumi {
+namespace sagatalu {
 
 bool WifiTransfer::begin(const char* ssid, const char* password) {
   if (ssid && ssid[0] != '\0') {
@@ -429,7 +429,7 @@ void WifiTransfer::handleDownload() {
   file.close();
 }
 void WifiTransfer::handleExportBg() {
-  // Write SumiHomeBg (800x480 1-bit raw framebuffer) as a
+  // Write SagaTaluHomeBg (800x480 1-bit raw framebuffer) as a
   // proper 1-bit BMP in portrait orientation (480x800)
   // so it opens correctly in image editors
 
@@ -489,7 +489,7 @@ void WifiTransfer::handleExportBg() {
   // The source data is 800x480 landscape (native display orientation)
   // We need to rotate 90° CCW to get 480x800 portrait
   // Source: row=y (0-479), col=x (0-799), 1 bit per pixel
-  // Source byte: SumiHomeBg[y * 100 + x/8], bit: 7-(x%8)
+  // Source byte: SagaTaluHomeBg[y * 100 + x/8], bit: 7-(x%8)
   // Dest: 480x800 portrait, stored bottom-to-top (standard BMP)
   // Dest row r (from bottom) = portrait row (799-r)
   // Portrait pixel (px, py) comes from landscape pixel (py, 479-px)
@@ -519,4 +519,4 @@ void WifiTransfer::handleExportBg() {
   file.close();
   server_->send(200, "text/plain", "Exported to /config/themes/default_bg_export.bmp");
 }
-}  // namespace sumi
+}  // namespace sagatalu

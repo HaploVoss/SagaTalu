@@ -1,4 +1,4 @@
-// Tests for the buffered write algorithm used in SUMI web server upload handling.
+// Tests for the buffered write algorithm used in SagaTalu web server upload handling.
 // The core logic: data arrives in chunks, gets accumulated in a 4KB buffer,
 // and flushed to disk when full. This avoids many small SD card writes.
 
@@ -26,7 +26,7 @@ struct UploadBuffer {
   }
 };
 
-// Mirrors SUMI web server::flushUploadBuffer()
+// Mirrors SagaTalu web server::flushUploadBuffer()
 bool flushBuffer(UploadBuffer& state) {
   if (state.bufferPos > 0 && state.file) {
     if (state.failNextWrite) {

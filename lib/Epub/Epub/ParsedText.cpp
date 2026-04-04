@@ -297,7 +297,7 @@ std::vector<size_t> ParsedText::computeLineBreaks(const int pageWidth, const int
   // Allocate dp[] and ans[] from the memory arena bump allocator when available.
   // This avoids heap fragmentation from large temporary arrays (n*4 bytes each).
   // Falls back to std::vector if arena is not initialized.
-  sumi::ArenaScratch arena;
+  sagatalu::ArenaScratch arena;
   int* dp = nullptr;
   size_t* ans = nullptr;
   std::vector<int> dpVec;

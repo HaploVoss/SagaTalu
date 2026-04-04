@@ -1,8 +1,15 @@
-# SUMI Changelog
+# SagaTalu Changelog
 
 Built on [Papyrix](https://github.com/pliashkou/papyrix) by Pavel Liashkov (@bigbag), itself based on CrossPoint Reader by Dave Allie.
 
-## [0.4.2-dev] — In Development
+## [1.0.1] — 2026-04-04
+
+**Forked as SagaTalu v1.0.1** — Complete rebrand from SUMI. All internal identifiers, namespaces, macros, and BLE device name updated from `sumi`/`SUMI` to `sagatalu`/`SagaTalu`. SD card data directory remains `/.sagatalu` (unchanged from SagaTalu v1.0.0).
+
+**Reader Orientation** — Reading Orientation setting now fully functional: Portrait, Landscape CW, Inverted, and Landscape CCW all apply correctly. Fixed a settings index mismatch that caused the orientation value (and Show Images) to be read/written from out-of-bounds array slots after Hyphenation and Show Tables were removed from the menu.
+
+**Cover Image Reliability** — Transient cover generation failures (memory pressure, SD errors during JPEG conversion) no longer write a permanent `.cover.failed` marker. Only genuinely permanent failures (unsupported format, no cover image in EPUB) block retry. On return navigation to the cover page, a rendering failure now falls forward to the first content spine instead of locking the reader on the empty cover HTML document.
+
 
 **Memory Arena Restructure** — The 80KB single-block arena is now three independent allocations: 32KB primary + 26KB work + 24KB task stack (82KB total). Splitting into three blocks survives heap fragmentation when BLE NimBLE is connected (~48KB held), where a single 82KB contiguous allocation would fail. The 24KB task stack is optional — if it can't be allocated, `BackgroundTask` falls back to heap-based `xTaskCreate`. The 58KB essential allocation (32+26) must succeed for inline images. Primary buffer sized to exactly match TINFL_LZ_DICT_SIZE (32KB) — previously 50KB with 18KB wasted.
 

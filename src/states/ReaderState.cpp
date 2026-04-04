@@ -35,7 +35,7 @@
 #include "../ui/Elements.h"
 #include "ThemeManager.h"
 
-namespace sumi {
+namespace sagatalu {
 
 static constexpr int kCacheTaskStackSize = 24576;  // 24KB - JPEGDEC needs more stack than picojpeg
 static constexpr int kCacheTaskStopTimeoutMs = 10000;  // 10s - generous for slow SD operations
@@ -286,7 +286,7 @@ void ReaderState::enter(Core& core) {
   MemoryArena::fallbackBuffer = renderer_.getFrameBuffer();
 
   // Open content using ContentHandle
-  auto result = core.content.open(contentPath_, SUMI_CACHE_DIR);
+  auto result = core.content.open(contentPath_, SAGATALU_CACHE_DIR);
   if (!result.ok()) {
     Serial.printf("[READER] Failed to open content: %s\n", errorToString(result.err));
     // Store error message for ErrorState to display
@@ -820,20 +820,35 @@ void ReaderState::renderCurrentPage(Core& core) {
         core.display.markDirty();
         return;
       }
-      // No cover - skip spine 0 if textStartIndex is 0 (likely empty cover document)
-      hasCover_ = false;
-      currentSectionPage_ = 0;
-      if (textStartIndex_ == 0) {
-        // Only skip to spine 1 if it exists
+      // Cover render failed.
+      // If hasCover_ was already true this is a return visit — the cover existed and
+      // rendered fine before. Don't permanently mark hasCover_=false and don't try
+      // to render spine 0 as text (it's the cover HTML: 0 pages → "Failed to load
+      // page" + stuck). Instead jump to first real content so the user can keep reading.
+      if (hasCover_) {
         auto* provider = core.content.asEpub();
         if (provider && provider->getEpub()) {
           const auto* epub = provider->getEpub();
-          if (epub->getSpineItemsCount() > 1) {
-            currentSpineIndex_ = 1;
+          currentSpineIndex_ = calcFirstContentSpine(true, textStartIndex_, epub->getSpineItemsCount());
+        }
+        currentSectionPage_ = 0;
+        // Fall through to render content
+      } else {
+        // First open and cover generation failed — no cover exists.
+        // Skip spine 0 if it's a cover-only HTML document.
+        hasCover_ = false;
+        currentSectionPage_ = 0;
+        if (textStartIndex_ == 0) {
+          auto* provider = core.content.asEpub();
+          if (provider && provider->getEpub()) {
+            const auto* epub = provider->getEpub();
+            if (epub->getSpineItemsCount() > 1) {
+              currentSpineIndex_ = 1;
+            }
           }
         }
+        // Fall through to render content
       }
-      // Fall through to render content
     } else {
       currentSectionPage_ = 0;
     }
@@ -1142,17 +1157,17 @@ void ReaderState::createOrExtendCache(Core& core) {
   // Parser uses framebuffer as ZIP dict (fallbackBuffer), not zipBuffer — safe to free.
   // When BLE is connected, heap is fragmented (~110KB free vs ~160KB) and parser needs
   // contiguous space for XML elements. Releasing 32KB gives the parser room to work.
-  const bool releasedPrimary = sumi::MemoryArena::primaryBuffer != nullptr
+  const bool releasedPrimary = sagatalu::MemoryArena::primaryBuffer != nullptr
                                 && (ESP.getFreeHeap() < 30000
-                                    || sumi::MemoryArena::fallbackBuffer != nullptr);
+                                    || sagatalu::MemoryArena::fallbackBuffer != nullptr);
   if (releasedPrimary) {
-    sumi::MemoryArena::releasePrimary();
+    sagatalu::MemoryArena::releasePrimary();
   }
 
   createOrExtendCacheImpl(*parser_, cachePath, config);
 
   if (releasedPrimary) {
-    sumi::MemoryArena::reclaimPrimary();
+    sagatalu::MemoryArena::reclaimPrimary();
   }
 }
 
@@ -1163,6 +1178,38 @@ void ReaderState::renderPageContents(Core& core, Page& page, int marginTop, int 
 
   const Theme& theme = THEME_MANAGER.current();
   const int fontId = core.settings.getReaderFontId(theme);
+
+  // Image-only pages in landscape: switch to portrait orientation so images
+  // render full-size and readable. The stored xPos/yPos were calculated for
+  // the landscape viewport, so we ignore them and re-center in portrait.
+  const GfxRenderer::Orientation currentOrientation = renderer_.getOrientation();
+  const bool isLandscape = (currentOrientation == GfxRenderer::Orientation::LandscapeClockwise ||
+                             currentOrientation == GfxRenderer::Orientation::LandscapeCounterClockwise);
+  if (isLandscape && page.isImageOnly()) {
+    renderer_.setOrientation(GfxRenderer::Orientation::Portrait);
+    renderer_.clearScreen(theme.backgroundColor);
+    const int screenW = renderer_.getScreenWidth();   // portrait: 480
+    const int screenH = renderer_.getScreenHeight();  // portrait: 800
+    for (const auto& el : page.elements) {
+      if (el->getTag() == TAG_PageImage) {
+        auto* pi = static_cast<PageImage*>(el.get());
+        const int imgW = pi->getImageWidth();
+        const int imgH = pi->getImageHeight();
+        // Center image on portrait screen, ignoring cached landscape xPos/yPos
+        const int centeredX = (screenW - imgW) / 2;
+        const int centeredY = (screenH - imgH) / 2;
+        if (centeredY < 0) {
+          // Image taller than screen — render from top with margin offset
+          el->render(renderer_, fontId, centeredX - el->xPos, marginTop - el->yPos);
+        } else {
+          el->render(renderer_, fontId, centeredX - el->xPos, centeredY - el->yPos);
+        }
+      }
+    }
+    renderer_.setOrientation(currentOrientation);
+    return;
+  }
+
   page.render(renderer_, fontId, marginLeft, marginTop, theme.primaryTextBlack);
 }
 
@@ -1342,27 +1389,43 @@ bool ReaderState::renderCoverPage(Core& core) {
   // Only release arena if cover BMP not already cached
   std::string cachedCoverPath = core.content.getCoverPath();
   const bool coverNeedsGeneration = cachedCoverPath.empty() || !SdMan.exists(cachedCoverPath.c_str());
-  bool arenaWasInit = sumi::MemoryArena::isInitialized();
+  bool arenaWasInit = sagatalu::MemoryArena::isInitialized();
   if (arenaWasInit && coverNeedsGeneration) {
-    sumi::MemoryArena::releasePrimary();
-    sumi::MemoryArena::releaseWork();
+    sagatalu::MemoryArena::releasePrimary();
+    sagatalu::MemoryArena::releaseWork();
     Serial.printf("[%lu] [RDR] Arena partial release for cover gen. Free heap: %u\n", millis(), ESP.getFreeHeap());
   }
   std::string coverPath = core.content.generateCover(true);
   if (arenaWasInit && coverNeedsGeneration) {
-    sumi::MemoryArena::reclaimPrimary();
-    sumi::MemoryArena::reclaimWork();
+    sagatalu::MemoryArena::reclaimPrimary();
+    sagatalu::MemoryArena::reclaimWork();
     Serial.printf("[%lu] [RDR] Arena restored after cover gen\n", millis());
   }
 
   Serial.printf("[%lu] [RDR] Rendering cover page from: %s\n", millis(), coverPath.c_str());
+
+  // Covers always render in portrait regardless of reader orientation —
+  // rotating a portrait cover into landscape produces a small, rotated image.
+  const GfxRenderer::Orientation savedOrientation = renderer_.getOrientation();
+  const bool coverIsLandscape =
+      (savedOrientation == GfxRenderer::Orientation::LandscapeClockwise ||
+       savedOrientation == GfxRenderer::Orientation::LandscapeCounterClockwise);
+  if (coverIsLandscape) renderer_.setOrientation(GfxRenderer::Orientation::Portrait);
+
+  // Recalculate viewport with portrait orientation active
   const auto vp = getReaderViewport();
   int pagesUntilRefresh = pagesUntilFullRefresh_;
   const bool turnOffScreen = core.settings.sunlightFadingFix != 0;
 
+  const bool primaryHeld = arenaWasInit && sagatalu::MemoryArena::primaryBuffer != nullptr;
+  if (primaryHeld) sagatalu::MemoryArena::releasePrimary();
+
   bool rendered = CoverHelpers::renderCoverFromBmp(renderer_, coverPath, vp.marginTop, vp.marginRight, vp.marginBottom,
                                                    vp.marginLeft, pagesUntilRefresh,
                                                    core.settings.getPagesPerRefreshValue(), turnOffScreen);
+
+  if (primaryHeld) sagatalu::MemoryArena::reclaimPrimary();
+  if (coverIsLandscape) renderer_.setOrientation(savedOrientation);
 
   // Force half refresh on next page to fully clear the cover image
   pagesUntilFullRefresh_ = 1;
@@ -1386,7 +1449,7 @@ void ReaderState::startBackgroundCaching(Core& core) {
   // Skip background task if heap is too low for the 24KB task stack + parser memory.
   // When BLE is connected, arena task stack is unavailable and heap is fragmented.
   // Need ~24KB stack + ~20KB parser working memory = ~44KB minimum.
-  if (!sumi::MemoryArena::taskStackRegion && ESP.getFreeHeap() < 50000) {
+  if (!sagatalu::MemoryArena::taskStackRegion && ESP.getFreeHeap() < 50000) {
     Serial.printf("[READER] Skipping background cache — low heap (%zu bytes)\n", ESP.getFreeHeap());
     return;
   }
@@ -1474,9 +1537,9 @@ void ReaderState::startBackgroundCaching(Core& core) {
   };
 
   // Use arena task stack to avoid heap fragmentation from 24KB xTaskCreate allocation
-  if (sumi::MemoryArena::isInitialized() && sumi::MemoryArena::taskStackRegion) {
-    cacheTask_.startStatic("PageCache", sumi::MemoryArena::taskStackRegion,
-                           sumi::MemoryArena::TASK_STACK_SIZE, std::move(taskBody), 0);
+  if (sagatalu::MemoryArena::isInitialized() && sagatalu::MemoryArena::taskStackRegion) {
+    cacheTask_.startStatic("PageCache", sagatalu::MemoryArena::taskStackRegion,
+                           sagatalu::MemoryArena::TASK_STACK_SIZE, std::move(taskBody), 0);
   } else {
     cacheTask_.start("PageCache", kCacheTaskStackSize, std::move(taskBody), 0);
   }
@@ -1955,8 +2018,8 @@ void ReaderState::handleBleAction(Core& core) {
   renderer_.displayBuffer(EInkDisplay::FAST_REFRESH);
 
   // Release arena to free heap for NimBLE stack init
-  if (sumi::MemoryArena::isInitialized()) {
-    sumi::MemoryArena::release();
+  if (sagatalu::MemoryArena::isInitialized()) {
+    sagatalu::MemoryArena::release();
   }
   ble::init();
 
@@ -2052,8 +2115,8 @@ void ReaderState::handleBleAction(Core& core) {
   }
 
   // Re-allocate arena for reading (deinit freed BLE stack if not connected)
-  if (!sumi::MemoryArena::isInitialized()) {
-    sumi::MemoryArena::init();
+  if (!sagatalu::MemoryArena::isInitialized()) {
+    sagatalu::MemoryArena::init();
   }
 
   needsRender_ = true;
@@ -2068,4 +2131,4 @@ void ReaderState::exitToUI(Core& core) {
   // which handles progress saving, thumbnail generation, and cleanup.
 }
 
-}  // namespace sumi
+}  // namespace sagatalu

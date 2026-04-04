@@ -26,7 +26,7 @@
 struct lua_State;
 struct lua_Debug;
 
-namespace sumi {
+namespace sagatalu {
 
 class LuaPlugin : public PluginInterface {
  public:
@@ -84,6 +84,6 @@ class LuaPlugin : public PluginInterface {
   static void luaHook(lua_State* L, lua_Debug* ar);
 };
 
-}  // namespace sumi
+}  // namespace sagatalu
 
 #endif  // FEATURE_PLUGINS

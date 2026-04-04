@@ -6,7 +6,7 @@
  *
  * Each function is a static lua_CFunction that reads args from the Lua stack,
  * calls the corresponding PluginRenderer method, and pushes any return values.
- * The PluginRenderer pointer is stored in the Lua registry at key "sumi_renderer".
+ * The PluginRenderer pointer is stored in the Lua registry at key "sagatalu_renderer".
  */
 
 #include "../config.h"
@@ -23,14 +23,14 @@ extern "C" {
 #include "PluginRenderer.h"
 #include "PluginHelpers.h"
 
-namespace sumi {
+namespace sagatalu {
 namespace lua_bind {
 
 // ---------------------------------------------------------------------------
 // Helper: retrieve the PluginRenderer* from the Lua registry
 // ---------------------------------------------------------------------------
 static inline PluginRenderer& getRenderer(lua_State* L) {
-  lua_getfield(L, LUA_REGISTRYINDEX, "sumi_renderer");
+  lua_getfield(L, LUA_REGISTRYINDEX, "sagatalu_renderer");
   auto* r = static_cast<PluginRenderer*>(lua_touserdata(L, -1));
   lua_pop(L, 1);
   return *r;
@@ -38,14 +38,14 @@ static inline PluginRenderer& getRenderer(lua_State* L) {
 
 // Store screen dimensions in registry for quick access
 static inline int getScreenW(lua_State* L) {
-  lua_getfield(L, LUA_REGISTRYINDEX, "sumi_screenW");
+  lua_getfield(L, LUA_REGISTRYINDEX, "sagatalu_screenW");
   int w = (int)lua_tointeger(L, -1);
   lua_pop(L, 1);
   return w;
 }
 
 static inline int getScreenH(lua_State* L) {
-  lua_getfield(L, LUA_REGISTRYINDEX, "sumi_screenH");
+  lua_getfield(L, LUA_REGISTRYINDEX, "sagatalu_screenH");
   int h = (int)lua_tointeger(L, -1);
   lua_pop(L, 1);
   return h;
@@ -430,6 +430,6 @@ static void sandboxGlobals(lua_State* L) {
 }
 
 }  // namespace lua_bind
-}  // namespace sumi
+}  // namespace sagatalu
 
 #endif  // FEATURE_PLUGINS

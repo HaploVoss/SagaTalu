@@ -15,7 +15,7 @@ class InputManager {
 };
 
 // Inline Settings enums
-namespace sumi {
+namespace sagatalu {
 struct Settings {
   enum SideButtonLayout : uint8_t { PrevNext = 0, NextPrev = 1 };
   enum FrontButtonLayout : uint8_t { FrontBCLR = 0, FrontLRBC = 1 };
@@ -23,63 +23,63 @@ struct Settings {
   uint8_t sideButtonLayout = PrevNext;
   uint8_t frontButtonLayout = FrontBCLR;
 };
-}  // namespace sumi
+}  // namespace sagatalu
 
 // Inline button mapping logic from MappedInputManager
 enum class Button { Back, Confirm, Left, Right, Up, Down, Power, PageBack, PageForward };
 
-int mapButton(Button button, sumi::Settings* settings) {
-  const auto frontLayout = settings ? static_cast<sumi::Settings::FrontButtonLayout>(settings->frontButtonLayout)
-                                    : sumi::Settings::FrontBCLR;
-  const auto sideLayout = settings ? static_cast<sumi::Settings::SideButtonLayout>(settings->sideButtonLayout)
-                                   : sumi::Settings::PrevNext;
+int mapButton(Button button, sagatalu::Settings* settings) {
+  const auto frontLayout = settings ? static_cast<sagatalu::Settings::FrontButtonLayout>(settings->frontButtonLayout)
+                                    : sagatalu::Settings::FrontBCLR;
+  const auto sideLayout = settings ? static_cast<sagatalu::Settings::SideButtonLayout>(settings->sideButtonLayout)
+                                   : sagatalu::Settings::PrevNext;
 
   switch (button) {
     case Button::Back:
       switch (frontLayout) {
-        case sumi::Settings::FrontLRBC:
+        case sagatalu::Settings::FrontLRBC:
           return InputManager::BTN_LEFT;
-        case sumi::Settings::FrontBCLR:
+        case sagatalu::Settings::FrontBCLR:
         default:
           return InputManager::BTN_BACK;
       }
     case Button::Confirm:
       switch (frontLayout) {
-        case sumi::Settings::FrontLRBC:
+        case sagatalu::Settings::FrontLRBC:
           return InputManager::BTN_RIGHT;
-        case sumi::Settings::FrontBCLR:
+        case sagatalu::Settings::FrontBCLR:
         default:
           return InputManager::BTN_CONFIRM;
       }
     case Button::Left:
       switch (frontLayout) {
-        case sumi::Settings::FrontLRBC:
+        case sagatalu::Settings::FrontLRBC:
           return InputManager::BTN_BACK;
-        case sumi::Settings::FrontBCLR:
+        case sagatalu::Settings::FrontBCLR:
         default:
           return InputManager::BTN_LEFT;
       }
     case Button::Right:
       switch (frontLayout) {
-        case sumi::Settings::FrontLRBC:
+        case sagatalu::Settings::FrontLRBC:
           return InputManager::BTN_CONFIRM;
-        case sumi::Settings::FrontBCLR:
+        case sagatalu::Settings::FrontBCLR:
         default:
           return InputManager::BTN_RIGHT;
       }
     case Button::Up:
       switch (sideLayout) {
-        case sumi::Settings::NextPrev:
+        case sagatalu::Settings::NextPrev:
           return InputManager::BTN_DOWN;
-        case sumi::Settings::PrevNext:
+        case sagatalu::Settings::PrevNext:
         default:
           return InputManager::BTN_UP;
       }
     case Button::Down:
       switch (sideLayout) {
-        case sumi::Settings::NextPrev:
+        case sagatalu::Settings::NextPrev:
           return InputManager::BTN_UP;
-        case sumi::Settings::PrevNext:
+        case sagatalu::Settings::PrevNext:
         default:
           return InputManager::BTN_DOWN;
       }
@@ -87,17 +87,17 @@ int mapButton(Button button, sumi::Settings* settings) {
       return InputManager::BTN_POWER;
     case Button::PageBack:
       switch (sideLayout) {
-        case sumi::Settings::NextPrev:
+        case sagatalu::Settings::NextPrev:
           return InputManager::BTN_DOWN;
-        case sumi::Settings::PrevNext:
+        case sagatalu::Settings::PrevNext:
         default:
           return InputManager::BTN_UP;
       }
     case Button::PageForward:
       switch (sideLayout) {
-        case sumi::Settings::NextPrev:
+        case sagatalu::Settings::NextPrev:
           return InputManager::BTN_UP;
-        case sumi::Settings::PrevNext:
+        case sagatalu::Settings::PrevNext:
         default:
           return InputManager::BTN_DOWN;
       }
@@ -110,8 +110,8 @@ int main() {
 
   // === Front button mapping: BCLR (default) ===
   {
-    sumi::Settings settings;
-    settings.frontButtonLayout = sumi::Settings::FrontBCLR;
+    sagatalu::Settings settings;
+    settings.frontButtonLayout = sagatalu::Settings::FrontBCLR;
 
     runner.expectEq(InputManager::BTN_BACK, mapButton(Button::Back, &settings), "BCLR: Back -> BTN_BACK");
     runner.expectEq(InputManager::BTN_CONFIRM, mapButton(Button::Confirm, &settings), "BCLR: Confirm -> BTN_CONFIRM");
@@ -121,8 +121,8 @@ int main() {
 
   // === Front button mapping: LRBC (swapped) ===
   {
-    sumi::Settings settings;
-    settings.frontButtonLayout = sumi::Settings::FrontLRBC;
+    sagatalu::Settings settings;
+    settings.frontButtonLayout = sagatalu::Settings::FrontLRBC;
 
     runner.expectEq(InputManager::BTN_LEFT, mapButton(Button::Back, &settings), "LRBC: Back -> BTN_LEFT");
     runner.expectEq(InputManager::BTN_RIGHT, mapButton(Button::Confirm, &settings), "LRBC: Confirm -> BTN_RIGHT");
@@ -132,8 +132,8 @@ int main() {
 
   // === Side button mapping: PrevNext (default) ===
   {
-    sumi::Settings settings;
-    settings.sideButtonLayout = sumi::Settings::PrevNext;
+    sagatalu::Settings settings;
+    settings.sideButtonLayout = sagatalu::Settings::PrevNext;
 
     runner.expectEq(InputManager::BTN_UP, mapButton(Button::PageBack, &settings), "PrevNext: PageBack -> BTN_UP");
     runner.expectEq(InputManager::BTN_DOWN, mapButton(Button::PageForward, &settings),
@@ -142,8 +142,8 @@ int main() {
 
   // === Side button mapping: NextPrev (swapped) ===
   {
-    sumi::Settings settings;
-    settings.sideButtonLayout = sumi::Settings::NextPrev;
+    sagatalu::Settings settings;
+    settings.sideButtonLayout = sagatalu::Settings::NextPrev;
 
     runner.expectEq(InputManager::BTN_DOWN, mapButton(Button::PageBack, &settings), "NextPrev: PageBack -> BTN_DOWN");
     runner.expectEq(InputManager::BTN_UP, mapButton(Button::PageForward, &settings),
@@ -152,9 +152,9 @@ int main() {
 
   // === Combined: LRBC front + NextPrev side ===
   {
-    sumi::Settings settings;
-    settings.frontButtonLayout = sumi::Settings::FrontLRBC;
-    settings.sideButtonLayout = sumi::Settings::NextPrev;
+    sagatalu::Settings settings;
+    settings.frontButtonLayout = sagatalu::Settings::FrontLRBC;
+    settings.sideButtonLayout = sagatalu::Settings::NextPrev;
 
     runner.expectEq(InputManager::BTN_LEFT, mapButton(Button::Back, &settings), "Combined: Back -> BTN_LEFT");
     runner.expectEq(InputManager::BTN_DOWN, mapButton(Button::PageBack, &settings),
@@ -163,16 +163,16 @@ int main() {
 
   // === Up/Down remapped by sideLayout ===
   {
-    sumi::Settings settings;
-    settings.sideButtonLayout = sumi::Settings::PrevNext;
+    sagatalu::Settings settings;
+    settings.sideButtonLayout = sagatalu::Settings::PrevNext;
 
     runner.expectEq(InputManager::BTN_UP, mapButton(Button::Up, &settings), "PrevNext: Up -> BTN_UP");
     runner.expectEq(InputManager::BTN_DOWN, mapButton(Button::Down, &settings), "PrevNext: Down -> BTN_DOWN");
   }
 
   {
-    sumi::Settings settings;
-    settings.sideButtonLayout = sumi::Settings::NextPrev;
+    sagatalu::Settings settings;
+    settings.sideButtonLayout = sagatalu::Settings::NextPrev;
 
     runner.expectEq(InputManager::BTN_DOWN, mapButton(Button::Up, &settings), "NextPrev: Up -> BTN_DOWN");
     runner.expectEq(InputManager::BTN_UP, mapButton(Button::Down, &settings), "NextPrev: Down -> BTN_UP");
@@ -180,9 +180,9 @@ int main() {
 
   // === Non-remapped buttons are unaffected ===
   {
-    sumi::Settings settings;
-    settings.frontButtonLayout = sumi::Settings::FrontLRBC;
-    settings.sideButtonLayout = sumi::Settings::NextPrev;
+    sagatalu::Settings settings;
+    settings.frontButtonLayout = sagatalu::Settings::FrontLRBC;
+    settings.sideButtonLayout = sagatalu::Settings::NextPrev;
 
     runner.expectEq(InputManager::BTN_POWER, mapButton(Button::Power, &settings), "Power always -> BTN_POWER");
   }

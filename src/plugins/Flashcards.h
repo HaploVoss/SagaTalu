@@ -11,11 +11,11 @@
 #include "PluginInterface.h"
 #include "PluginRenderer.h"
 
-namespace sumi {
+namespace sagatalu {
 
 /**
  * @file Flashcards.h
- * @brief Enhanced Flashcard app for Sumi e-reader
+ * @brief Enhanced Flashcard app for SagaTalu e-reader
  * @version 1.0.0
  *
  * Features:
@@ -35,8 +35,8 @@ namespace sumi {
 // =============================================================================
 // Constants
 // =============================================================================
-#define FLASHCARDS_STATS_PATH "/.sumi/flashcards_stats.bin"
-#define FLASHCARDS_DECKMETA_PATH "/.sumi/flashcards_decks.bin"
+#define FLASHCARDS_STATS_PATH "/.sagatalu/flashcards_stats.bin"
+#define FLASHCARDS_DECKMETA_PATH "/.sagatalu/flashcards_decks.bin"
 
 // =============================================================================
 // Enums
@@ -2053,7 +2053,7 @@ public:
     }
     
     void saveStats() {
-        SdMan.mkdir("/.sumi");
+        SdMan.mkdir("/.sagatalu");
         FsFile f = SdMan.open(FLASHCARDS_STATS_PATH, O_WRONLY | O_CREAT | O_TRUNC);
         if (f) {
             f.write((uint8_t*)&stats, sizeof(FlashcardStats));
@@ -2073,7 +2073,7 @@ public:
     }
     
     void saveDeckMeta() {
-        SdMan.mkdir("/.sumi");
+        SdMan.mkdir("/.sagatalu");
         FsFile f = SdMan.open(FLASHCARDS_DECKMETA_PATH, O_WRONLY | O_CREAT | O_TRUNC);
         if (f) {
             f.write((uint8_t*)&deckMeta, sizeof(DeckMetadataFile));
@@ -2184,6 +2184,6 @@ public:
   PluginRenderer& d_;
 };
 
-}  // namespace sumi
+}  // namespace sagatalu
 
 #endif  // FEATURE_PLUGINS

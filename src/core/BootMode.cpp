@@ -6,12 +6,12 @@
 
 #include "../ThemeManager.h"
 #include "Core.h"
-#include "SumiSettings.h"
+#include "SagaTaluSettings.h"
 
 // Access global renderer from main.cpp
 extern GfxRenderer renderer;
 
-namespace sumi {
+namespace sagatalu {
 
 // Access global core from main.cpp
 extern Core core;
@@ -126,4 +126,4 @@ void showTransitionNotification(const char* message) {
   Serial.printf("[BOOT] Displayed notification: %s\n", message);
 }
 
-}  // namespace sumi
+}  // namespace sagatalu

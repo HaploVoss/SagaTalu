@@ -26,7 +26,7 @@
 extern InputManager inputManager;
 extern uint16_t rtcPowerButtonDurationMs;
 
-namespace sumi {
+namespace sagatalu {
 
 SleepState::SleepState(GfxRenderer& renderer) : renderer_(renderer) {}
 
@@ -97,7 +97,7 @@ void SleepState::renderDefaultSleepScreen(const Core& core) const {
 
   renderer_.clearScreen(THEME.backgroundColor);
   renderer_.drawImage(SumiLogo, (pageWidth) / 2 + SUMI_LOGO_W * 2 / 5, (pageHeight - SUMI_LOGO_H) / 2, SUMI_LOGO_W, SUMI_LOGO_H);
-  renderer_.drawCenteredText(THEME.smallFontId, pageHeight - 30, SUMI_VERSION, THEME.primaryTextBlack);
+  renderer_.drawCenteredText(THEME.smallFontId, pageHeight - 30, SAGATALU_VERSION, THEME.primaryTextBlack);
 
   // Make sleep screen dark unless light is selected in settings
   if (core.settings.sleepScreen != Settings::SleepLight) {
@@ -189,22 +189,22 @@ void SleepState::renderCoverSleepScreen(Core& core) const {
 
   // Generate cover BMP based on file type (creates temporary wrapper to generate cover)
   if (FsHelpers::isXtcFile(bookPath)) {
-    Xtc xtc(bookPath, SUMI_CACHE_DIR);
+    Xtc xtc(bookPath, SAGATALU_CACHE_DIR);
     if (xtc.load() && xtc.generateCoverBmp()) {
       coverBmpPath = xtc.getCoverBmpPath();
     }
   } else if (FsHelpers::isTxtFile(bookPath)) {
-    Txt txt(bookPath, SUMI_CACHE_DIR);
+    Txt txt(bookPath, SAGATALU_CACHE_DIR);
     if (txt.load() && txt.generateCoverBmp(true)) {
       coverBmpPath = txt.getCoverBmpPath();
     }
   } else if (FsHelpers::isMarkdownFile(bookPath)) {
-    Markdown md(bookPath, SUMI_CACHE_DIR);
+    Markdown md(bookPath, SAGATALU_CACHE_DIR);
     if (md.load() && md.generateCoverBmp(true)) {
       coverBmpPath = md.getCoverBmpPath();
     }
   } else if (FsHelpers::isEpubFile(bookPath)) {
-    Epub epub(bookPath, SUMI_CACHE_DIR);
+    Epub epub(bookPath, SAGATALU_CACHE_DIR);
     if (epub.load() && epub.generateCoverBmp(true)) {
       coverBmpPath = epub.getCoverBmpPath();
     }
@@ -265,4 +265,4 @@ void SleepState::waitForPowerRelease() const {
   }
 }
 
-}  // namespace sumi
+}  // namespace sagatalu

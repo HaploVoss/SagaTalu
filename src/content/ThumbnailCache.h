@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace sumi {
+namespace sagatalu {
 
 /**
  * Flash-based thumbnail cache for instant home screen loading.
@@ -66,4 +66,4 @@ class ThumbnailCache {
   static void getPath(uint32_t bookHash, char* pathOut, size_t maxLen);
 };
 
-}  // namespace sumi
+}  // namespace sagatalu
