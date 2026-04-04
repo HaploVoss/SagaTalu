@@ -4,7 +4,7 @@ Built on [Papyrix](https://github.com/pliashkou/papyrix) by Pavel Liashkov (@big
 
 ## [1.0.1] — 2026-04-04
 
-**Forked as SagaTalu v1.0.1** — Complete rebrand from SUMI. All internal identifiers, namespaces, macros, and BLE device name updated from `sumi`/`SUMI` to `sagatalu`/`SagaTalu`. SD card data directory remains `/.sagatalu` (unchanged from SagaTalu v1.0.0).
+**Forked as SagaTalu v1.0.1** — Complete rebrand from SUMI. All internal identifiers, namespaces, macros, and BLE device name updated from `sumi`/`SUMI` to `sagatalu`/`SagaTalu`. SD card data directory remains `/.sagatalu` (unchanged from SagaTalu v1.0.0). Complete rework of landscape to show full page images as portrait layout for ease of viewing full image, inline images remain as normal. Small performance increase and menu organization.
 
 **Reader Orientation** — Reading Orientation setting now fully functional: Portrait, Landscape CW, Inverted, and Landscape CCW all apply correctly. Fixed a settings index mismatch that caused the orientation value (and Show Images) to be read/written from out-of-bounds array slots after Hyphenation and Show Tables were removed from the menu.
 
