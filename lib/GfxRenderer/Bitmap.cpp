@@ -205,7 +205,13 @@ BmpReaderError Bitmap::parseHeaders() {
 
 // packed 2bpp output, 0 = black, 1 = dark gray, 2 = light gray, 3 = white
 BmpReaderError Bitmap::readRow(uint8_t* data, uint8_t* rowBuffer, int rowY) const {
-  // Note: rowBuffer should be pre-allocated by the caller to size 'rowBytes'
+  // Seek to the correct row. Bottom-up BMPs store row 0 at the visual bottom,
+  // so we reverse the row index. Top-down BMPs store row 0 at the visual top.
+  const uint32_t fileRow = topDown ? static_cast<uint32_t>(rowY)
+                                   : static_cast<uint32_t>(height - 1 - rowY);
+  if (!file.seek(bfOffBits + fileRow * static_cast<uint32_t>(rowBytes))) {
+    return BmpReaderError::SeekStartFailed;
+  }
   if (file.read(rowBuffer, rowBytes) != rowBytes) return BmpReaderError::ShortReadRow;
 
   prevRowY += 1;

@@ -273,9 +273,9 @@ void GfxRenderer::drawBitmap(const Bitmap& bitmap, const int x, const int y, con
     if (screenY >= getScreenHeight()) break;
 
     const int srcRow = static_cast<int>(screenRow / scale);
-    const int bmpY = bitmap.isTopDown()
-      ? std::min(srcRow, bitmap.getHeight() - 1)
-      : std::min(bitmap.getHeight() - 1 - srcRow, bitmap.getHeight() - 1);
+    // readRow handles top-down vs bottom-up orientation via seeking.
+    // We just pass srcRow (0 = top of image, height-1 = bottom).
+    const int bmpY = std::min(srcRow, bitmap.getHeight() - 1);
 
     // Only re-read row if it changed
     if (bmpY != lastBmpY) {
