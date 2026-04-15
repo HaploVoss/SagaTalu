@@ -4,6 +4,7 @@
 
 #include "HyphenationCommon.h"
 #include "LanguageRegistry.h"
+#include <HardwareSerial.h>
 
 const LanguageHyphenator* Hyphenator::cachedHyphenator_ = nullptr;
 
@@ -23,7 +24,9 @@ const LanguageHyphenator* hyphenatorForLanguage(const std::string& langTag) {
   }
   if (primary.empty()) return nullptr;
 
-  return getLanguageHyphenatorForPrimaryTag(primary);
+  const LanguageHyphenator* result = getLanguageHyphenatorForPrimaryTag(primary);
+  // Fall back to English for unrecognized languages — better than no hyphenation
+  return result ? result : getLanguageHyphenatorForPrimaryTag("en");
 }
 
 // Maps a codepoint index back to its byte offset inside the source word.
@@ -56,6 +59,11 @@ std::vector<Hyphenator::BreakInfo> Hyphenator::breakOffsets(const std::string& w
   auto cps = collectCodepoints(word);
   trimSurroundingPunctuationAndFootnote(cps);
   const auto* hyphenator = cachedHyphenator_;
+
+  // ADD THIS TEMPORARILY:
+  if (word == "impossibly" || word == "suffocation" || word == "desperately") {
+    Serial.printf("[HYP] Testing '%s': hyphenator=%s\n", word.c_str(), hyphenator ? "SET" : "NULL");
+  }
 
   // Explicit hyphen markers (soft or hard) take precedence over language breaks.
   auto explicitBreakInfos = buildExplicitBreakInfos(cps);

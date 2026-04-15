@@ -43,14 +43,17 @@ class ParsedText {
   std::vector<uint16_t> calculateWordWidths(const GfxRenderer& renderer, int fontId);
 
  public:
+ //temp
   explicit ParsedText(const TextBlock::BLOCK_STYLE style, const uint8_t indentLevel,
-                      const bool hyphenationEnabled = true, const bool useGreedy = false, const bool rtl = false)
-      : style(style),
-        indentLevel(indentLevel),
-        hyphenationEnabled(hyphenationEnabled),
-        useGreedyBreaking(useGreedy),
-        isRtl(rtl) {}
-  ~ParsedText() = default;
+                    const bool hyphenationEnabled = true, const bool useGreedy = false, const bool rtl = false)
+    : style(style),
+      indentLevel(indentLevel),
+      hyphenationEnabled(hyphenationEnabled),
+      useGreedyBreaking(useGreedy),
+      isRtl(rtl) {
+  if (useGreedy) Serial.printf("[HYP] ParsedText constructed with greedy=true!\n");
+  //temp
+}
 
   void addWord(std::string word, EpdFontFamily::Style fontStyle, uint8_t decorations = 0);
   void setStyle(const TextBlock::BLOCK_STYLE style) { this->style = style; }

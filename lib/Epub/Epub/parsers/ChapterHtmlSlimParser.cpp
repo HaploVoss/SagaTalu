@@ -848,10 +848,14 @@ bool ChapterHtmlSlimParser::parseLoop() {
       }
       Serial.printf("[%lu] [EHP] Text block too long (%zu words), splitting\n", millis(), currentTextBlock->size());
       currentTextBlock->setUseGreedyBreaking(true);
-      currentTextBlock->layoutAndExtractLines(
-          renderer, config.fontId, config.viewportWidth,
-          [this](const std::shared_ptr<TextBlock>& textBlock) { addLineToPage(textBlock); }, false,
-          [this]() -> bool { return shouldAbort(); });
+      // Only use greedy breaking if memory is tight — otherwise restore proper hyphenation
+if (ESP.getFreeHeap() >= 8192) {
+    currentTextBlock->setUseGreedyBreaking(false);
+}
+currentTextBlock->layoutAndExtractLines(
+    renderer, config.fontId, config.viewportWidth,
+    [this](const std::shared_ptr<TextBlock>& textBlock) { addLineToPage(textBlock); }, true,
+    [this]() -> bool { return stopRequested_; });
     }
   } while (!done);
 
@@ -948,6 +952,7 @@ void ChapterHtmlSlimParser::addLineToPage(std::shared_ptr<TextBlock> line) {
 }
 
 void ChapterHtmlSlimParser::makePages() {
+  Serial.printf("[%lu] [EHP] makePages: hyphenation=%d\n", millis(), config.hyphenation);
   if (!currentTextBlock) {
     Serial.printf("[%lu] [EHP] !! No text block to make pages for !!\n", millis());
     return;
@@ -972,7 +977,6 @@ void ChapterHtmlSlimParser::makePages() {
   }
 
   const int lineHeight = renderer.getLineHeight(config.fontId) * config.lineCompression;
-  currentTextBlock->setUseGreedyBreaking(true);
   currentTextBlock->layoutAndExtractLines(
       renderer, config.fontId, config.viewportWidth,
       [this](const std::shared_ptr<TextBlock>& textBlock) { addLineToPage(textBlock); }, true,

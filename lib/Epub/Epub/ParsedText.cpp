@@ -11,6 +11,7 @@
 
 #include "../../src/core/MemoryArena.h"
 #include "hyphenation/Hyphenator.h"
+#include <HardwareSerial.h>
 
 constexpr int MAX_COST = std::numeric_limits<int>::max();
 
@@ -31,9 +32,6 @@ const std::vector<std::string> punctuation = {
     "\xE2\x80\x99",  // ' (U+2019 right single quote)
     "\xE2\x80\x9D"   // " (U+201D right double quote)
 };
-
-// Check if a word consists entirely of attaching punctuation
-// These should attach to the previous word without extra spacing
 bool isAttachingPunctuationWord(const std::string& word) {
   if (word.empty()) return false;
   size_t pos = 0;
@@ -50,6 +48,7 @@ bool isAttachingPunctuationWord(const std::string& word) {
   }
   return true;
 }
+
 
 namespace {
 
@@ -207,6 +206,7 @@ bool ParsedText::layoutAndExtractLines(const GfxRenderer& renderer, const int fo
   auto wordWidths = calculateWordWidths(renderer, fontId);
 
   std::vector<size_t> lineBreakIndices;
+  Serial.printf("[HYP] layout: hyphenation=%d greedy=%d words=%zu\n", hyphenationEnabled, useGreedyBreaking, words.size());
   if (hyphenationEnabled && !useGreedyBreaking) {
     // Greedy layout with opportunistic Liang hyphenation at overflow points
     lineBreakIndices = computeHyphenatedLineBreaks(renderer, fontId, pageWidth, spaceWidth, wordWidths, shouldAbort);
@@ -452,12 +452,12 @@ void ParsedText::extractLine(const size_t breakIndex, const int pageWidth, const
   // Cap at 2.5x normal space width to prevent extreme gaps when hyphenation
   // is disabled and long words push to the next line.
   bool useJustify = false;
+  // For justified text, calculate spacing based on actual gap count.
+  // Cap at 2x normal space width — beyond that, leave natural spacing rather
+  // than creating distracting gaps when hyphenation couldn't fill the line.
   if (style == TextBlock::JUSTIFIED && !isLastLine && actualGapCount >= 1) {
-    const int candidateSpacing = spareSpace / static_cast<int>(actualGapCount);
-      if (candidateSpacing <= (spaceWidth * 5 / 2)) {
-        spacing = candidateSpacing;
-        useJustify = true;
-      }
+     const int candidateSpacing = spareSpace / static_cast<int>(actualGapCount);
+     spacing = std::min(candidateSpacing, spaceWidth * 2);
   }
 
   // For RTL text, default to right alignment
@@ -611,6 +611,7 @@ std::vector<size_t> ParsedText::computeHyphenatedLineBreaks(const GfxRenderer& r
                                                             const int pageWidth, const int spaceWidth,
                                                             std::vector<uint16_t>& wordWidths,
                                                             const AbortCallback& shouldAbort) {
+  Serial.printf("[HYP] computeHyphenated: %zu words, pageWidth=%d\n", wordWidths.size(), pageWidth);
   // Build isAttaching snapshot for O(1) lookup (may grow as words are split)
   std::vector<bool> isAttaching;
   isAttaching.reserve(wordWidths.size());
