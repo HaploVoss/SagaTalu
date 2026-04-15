@@ -100,6 +100,13 @@ void ChapterHtmlSlimParser::startNewTextBlock(const TextBlock::BLOCK_STYLE style
 
     makePages();
     pendingEmergencySplit_ = false;
+
+    // If the parser was suspended mid-layout (maxPages hit), the current text
+    // block may still have unprocessed words. Don't replace it — the remaining
+    // words will be laid out when the parser resumes for the next cache chunk.
+    if (stopRequested_) {
+      return;
+    }
   }
   currentTextBlock.reset(new ParsedText(style, config.indentLevel, config.hyphenation, false, pendingRtl_));
 }
@@ -121,9 +128,18 @@ void XMLCALL ChapterHtmlSlimParser::startElement(void* userData, const XML_Char*
     self->depth += 1;
     return;
   }
+
   if (ESP.getFreeHeap() < 8192) {
-    Serial.printf("[%lu] [EHP] Low memory in startElement (%zu bytes), stopping parser\n",
+    Serial.printf("[%lu] [EHP] Low memory in startElement (%zu bytes), flushing and stopping\n",
                   millis(), ESP.getFreeHeap());
+    // Flush current text block before stopping so text isn't lost
+    if (self->currentTextBlock && !self->currentTextBlock->isEmpty()) {
+        self->currentTextBlock->setUseGreedyBreaking(true);
+        self->makePages();
+    }
+    if (self->currentPage && !self->currentPage->elements.empty()) {
+        self->completePageFn(std::move(self->currentPage));
+    }
     self->aborted_ = true;
     self->stopRequested_ = true;
     XML_StopParser(self->xmlParser_, XML_FALSE);
@@ -944,10 +960,10 @@ void ChapterHtmlSlimParser::makePages() {
   // Uses total free heap since layout allocations are many small ones.
   const size_t freeHeap = ESP.getFreeHeap();
   if (freeHeap < 8192) {
-    Serial.printf("[%lu] [EHP] Insufficient memory for layout (%zu bytes)\n", millis(), freeHeap);
-    currentTextBlock.reset();
-    aborted_ = true;
-    return;
+    Serial.printf("[%lu] [EHP] Low memory for layout (%zu bytes), using greedy breaking\n", millis(), freeHeap);
+    // Don't discard — use fast greedy layout instead of minimum-raggedness
+    currentTextBlock->setUseGreedyBreaking(true);
+    // Fall through to layout below
   }
 
   if (!currentPage) {
@@ -956,6 +972,7 @@ void ChapterHtmlSlimParser::makePages() {
   }
 
   const int lineHeight = renderer.getLineHeight(config.fontId) * config.lineCompression;
+  currentTextBlock->setUseGreedyBreaking(true);
   currentTextBlock->layoutAndExtractLines(
       renderer, config.fontId, config.viewportWidth,
       [this](const std::shared_ptr<TextBlock>& textBlock) { addLineToPage(textBlock); }, true,

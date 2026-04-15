@@ -207,7 +207,7 @@ bool ParsedText::layoutAndExtractLines(const GfxRenderer& renderer, const int fo
   auto wordWidths = calculateWordWidths(renderer, fontId);
 
   std::vector<size_t> lineBreakIndices;
-  if (hyphenationEnabled) {
+  if (hyphenationEnabled && !useGreedyBreaking) {
     // Greedy layout with opportunistic Liang hyphenation at overflow points
     lineBreakIndices = computeHyphenatedLineBreaks(renderer, fontId, pageWidth, spaceWidth, wordWidths, shouldAbort);
   } else if (useGreedyBreaking) {
@@ -448,13 +448,24 @@ void ParsedText::extractLine(const size_t breakIndex, const int pageWidth, const
   int spacing = spaceWidth;
   const bool isLastLine = breakIndex == lineBreakIndices.size() - 1;
 
-  // For justified text, calculate spacing based on actual gap count
+  // For justified text, calculate spacing based on actual gap count.
+  // Cap at 2.5x normal space width to prevent extreme gaps when hyphenation
+  // is disabled and long words push to the next line.
+  bool useJustify = false;
   if (style == TextBlock::JUSTIFIED && !isLastLine && actualGapCount >= 1) {
-    spacing = spareSpace / static_cast<int>(actualGapCount);
+    const int candidateSpacing = spareSpace / static_cast<int>(actualGapCount);
+      if (candidateSpacing <= (spaceWidth * 5 / 2)) {
+        spacing = candidateSpacing;
+        useJustify = true;
+      }
   }
 
   // For RTL text, default to right alignment
-  const auto effectiveStyle = (isRtl && style == TextBlock::LEFT_ALIGN) ? TextBlock::RIGHT_ALIGN : style;
+  const auto effectiveStyle = (isRtl && style == TextBlock::LEFT_ALIGN)
+    ? TextBlock::RIGHT_ALIGN
+    : (style == TextBlock::JUSTIFIED && !useJustify)
+        ? TextBlock::LEFT_ALIGN
+        : style;
 
   // Build WordData vector directly, consuming from front of lists
   // Punctuation that attaches to the previous word doesn't get space before it
