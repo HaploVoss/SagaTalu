@@ -56,7 +56,7 @@
       <h1>EPUB Optimizer</h1>
       <p>Required for cover art and inline images · Converts to device-native BMP · Runs in your browser</p>
     </div>
-
+ 
     <div class="card">
       <h2>Drop files</h2>
       <div class="drop-zone" id="dropZone">
@@ -65,7 +65,7 @@
         <div class="drop-zone-sub">One or more .epub files accepted</div>
       </div>
     </div>
-
+ 
     <div class="card">
       <h2>Options</h2>
       <div class="option-row"><input type="checkbox" id="opt-convert-images" checked><div><div>Convert images to 2-bit BMP</div><div class="option-desc">Required — device cannot decode JPEG/PNG from EPUBs directly</div></div></div>
@@ -76,25 +76,25 @@
       <div class="option-row"><input type="checkbox" id="opt-fix-encoding" checked><div><div>Fix encoding issues</div><div class="option-desc">Replace smart quotes and special characters</div></div></div>
       <div class="option-row"><input type="checkbox" id="opt-strip-junk" checked><div><div>Strip junk files</div><div class="option-desc">Remove .DS_Store, __MACOSX, and similar</div></div></div>
     </div>
-
+ 
     <div class="card file-list" id="fileList">
       <h2>Files</h2>
       <div id="fileItems"></div>
     </div>
-
+ 
     <div class="actions">
       <button class="primary" id="convertBtn" disabled>✦ Convert</button>
       <button id="clearBtn" disabled>Clear</button>
     </div>
-
+ 
     <div class="log" id="log"></div>
-
-    <p style="text-align:center;font-size:0.72em;color:#3a3020;margin-bottom:8px">updated 21:04 Mar 31</p>
+ 
+    <p style="text-align:center;font-size:0.72em;color:#3a3020;margin-bottom:8px">updated Apr 19 2026</p>
     <div class="footer">
       <p><a href="../">← Back to Flasher</a> · <a href="https://sagatalu.com">Saga Talu</a> · <a href="https://github.com/HaploVoss/SagaTalu">GitHub</a></p>
     </div>
   </div>
-
+ 
   <script>
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
@@ -104,7 +104,7 @@
     const clearBtn = document.getElementById('clearBtn');
     const logEl = document.getElementById('log');
     let files = [];
-
+ 
     function log(msg, type='') {
       logEl.style.display = 'block';
       const line = document.createElement('div');
@@ -113,7 +113,7 @@
       logEl.appendChild(line);
       logEl.scrollTop = logEl.scrollHeight;
     }
-
+ 
     function addFiles(newFiles) {
       for (const f of newFiles) {
         if (f.name.endsWith('.epub') && !files.find(x => x.name === f.name)) {
@@ -128,53 +128,53 @@
       convertBtn.disabled = files.length === 0;
       clearBtn.disabled = files.length === 0;
     }
-
+ 
     function setStatus(idx, text, cls) {
       const el = document.getElementById('status-'+idx);
       if (el) { el.textContent = text; el.className = 'file-status '+cls; }
     }
-
+ 
     dropZone.addEventListener('click', () => fileInput.click());
     dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
     dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
     dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); addFiles(e.dataTransfer.files); });
     fileInput.addEventListener('change', () => addFiles(fileInput.files));
-
+ 
     clearBtn.addEventListener('click', () => {
       files = []; fileItems.innerHTML = '';
       fileList.style.display = 'none';
       convertBtn.disabled = true; clearBtn.disabled = true;
       logEl.innerHTML = ''; logEl.style.display = 'none';
     });
-
+ 
     function getOptions() {
       return {
         convertImages: document.getElementById('opt-convert-images').checked,
-        resizeImages: document.getElementById('opt-resize-images').checked,
-        stripCss: document.getElementById('opt-strip-css').checked,
-        stripFonts: document.getElementById('opt-strip-fonts').checked,
-        stripJs: document.getElementById('opt-strip-js').checked,
-        fixEncoding: document.getElementById('opt-fix-encoding').checked,
-        stripJunk: document.getElementById('opt-strip-junk').checked,
+        resizeImages:  document.getElementById('opt-resize-images').checked,
+        stripCss:      document.getElementById('opt-strip-css').checked,
+        stripFonts:    document.getElementById('opt-strip-fonts').checked,
+        stripJs:       document.getElementById('opt-strip-js').checked,
+        fixEncoding:   document.getElementById('opt-fix-encoding').checked,
+        stripJunk:     document.getElementById('opt-strip-junk').checked,
       };
     }
-
+ 
     const JUNK = ['.DS_Store','__MACOSX','Thumbs.db','desktop.ini'];
     const FONT_EXTS = ['.ttf','.otf','.woff','.woff2','.eot'];
     const IMAGE_EXTS = ['.jpg','.jpeg','.png','.gif','.webp'];
-
+ 
     function isJunk(p) { return JUNK.some(j => p.includes(j)); }
     function isFont(p) { return FONT_EXTS.some(e => p.toLowerCase().endsWith(e)); }
     function isImage(p) { return IMAGE_EXTS.some(e => p.toLowerCase().endsWith(e)); }
     function isBmp(p) { return p.toLowerCase().endsWith('.bmp'); }
     function isCss(p) { return p.toLowerCase().endsWith('.css'); }
     function isJs(p) { return p.toLowerCase().endsWith('.js'); }
-
+ 
     function stripCssFromHtml(h) {
-      h = h.replace(/<link[^>]*rel=["']stylesheet["'][^>]*>/gi,'');
-      h = h.replace(/<link[^>]*href=["'][^"']*\.css["'][^>]*>/gi,'');
+      h = h.replace(/<link[^>]*rel=["'']stylesheet["''][^>]*>/gi,'');
+      h = h.replace(/<link[^>]*href=["''][^"'']*\.css["''][^>]*>/gi,'');
       h = h.replace(/<style[^>]*>[\s\S]*?<\/style>/gi,'');
-      h = h.replace(/\s*style=["'][^"']*["']/gi,'');
+      h = h.replace(/\s*style=["''][^"'']*["'']/gi,'');
       return h;
     }
     function stripJsFromHtml(h) {
@@ -185,24 +185,34 @@
               .replace(/\u2013/g,'-').replace(/\u2014/g,'--')
               .replace(/\u2026/g,'...').replace(/\u00A0/g,' ');
     }
-
-    // Update image references in text content (HTML, OPF, NCX)
+ 
+    // Strip background color from CSS body rules — prevents heap fragmentation on device
+    function stripBodyBackground(css) {
+      return css.replace(/(body\s*\{[^}]*?)background(?:-color)?\s*:[^;]+;/gi, '$1');
+    }
+ 
     function updateImageRefs(content, imageMap) {
       let result = content;
       for (const [oldPath, newPath] of imageMap) {
         const oldName = oldPath.split('/').pop();
         const newName = newPath.split('/').pop();
-        const oldExt = oldName.split('.').pop();
-        // Replace filename references
         result = result.split(oldName).join(newName);
-        // Replace media-type in OPF manifest
         result = result.replace(/media-type=["'](image\/jpeg|image\/png|image\/gif|image\/webp)["']/gi,
           'media-type="image/bmp"');
       }
       return result;
     }
-
-    // Scale an existing 2-bit BMP to a new size, returns new 2-bit BMP
+ 
+    // Inject sumi device-hint metadata into OPF <metadata> block
+    function injectSumiMetadata(opfText) {
+      // Only inject if not already present
+      if (opfText.includes('sumi:images')) return opfText;
+      const injection = '    <dc:subject>sumi:book</dc:subject>\n' +
+                        '    <meta name="sumi:images" content="bmp-2bit"/>\n';
+      // Insert before closing </metadata>
+      return opfText.replace('</metadata>', injection + '</metadata>');
+    }
+ 
     async function scaleBmp2bit(bmpData, targetW, targetH) {
       try {
         const view = new DataView(bmpData.buffer);
@@ -211,8 +221,7 @@
         const pixOffset = view.getUint32(10, true);
         const srcRowBytes = Math.ceil(srcW*2/32)*4;
         const gray_vals = [0, 85, 170, 255];
-
-        // Decode source BMP to grayscale array
+ 
         const srcGray = new Uint8Array(srcW * srcH);
         for (let y=0; y<srcH; y++) {
           for (let bx=0; bx<srcRowBytes; bx++) {
@@ -225,8 +234,7 @@
             }
           }
         }
-
-        // Scale using bilinear interpolation
+ 
         const dstGray = new Float32Array(targetW * targetH);
         for (let y=0; y<targetH; y++) {
           for (let x=0; x<targetW; x++) {
@@ -242,8 +250,7 @@
               srcGray[y1*srcW+x1]*fx*fy;
           }
         }
-
-        // Encode as 2-bit BMP
+ 
         const dstRowBytes = Math.ceil(targetW*2/32)*4;
         const pixelDataSize = dstRowBytes * targetH;
         const fileSize = 70 + pixelDataSize;
@@ -263,8 +270,7 @@
         dv.setUint32(50, 4, true);
         const pal = [0,0,0,0, 0x55,0x55,0x55,0, 0xAA,0xAA,0xAA,0, 0xFF,0xFF,0xFF,0];
         for (let i=0; i<16; i++) bmp[54+i]=pal[i];
-
-        // Atkinson dither
+ 
         const pixOut = new Uint8Array(targetW*targetH);
         for (let y=0; y<targetH; y++) {
           for (let x=0; x<targetW; x++) {
@@ -280,10 +286,10 @@
               dstGray[idx+targetW] += err;
               if (x+1<targetW) dstGray[idx+targetW+1] += err;
             }
-            if (y+2<targetH) dstGray[idx+targetW*2] += err;
+            if (y+2<targetH) dstGray[idx+targetWidth*2] += err;
           }
         }
-
+ 
         for (let y=0; y<targetH; y++) {
           for (let byteX=0; byteX<dstRowBytes; byteX++) {
             let byte = 0;
@@ -298,10 +304,12 @@
         return bmp;
       } catch(e) { return null; }
     }
-
-    // Convert image to 2-bit BMP matching device format exactly
-    // Palette: 00000000, 55555500, aaaaaa00, ffffff00
-    async function imageTo2BitBmp(data, opts) {
+ 
+    // Convert image to 2-bit BMP.
+    // lighten=false: standard thresholds for cover images (firmware does grayscale pass)
+    // lighten=true:  adjusted thresholds for interior images (no grayscale pass on device)
+    //   Pushes midtones toward white so fast-refresh display matches grayscale pass output.
+    async function imageTo2BitBmp(data, opts, lighten = false) {
       return new Promise(resolve => {
         const blob = new Blob([data]);
         const url = URL.createObjectURL(blob);
@@ -313,54 +321,46 @@
             const s = Math.min(480/w, 800/h);
             w = Math.round(w*s); h = Math.round(h*s);
           }
-
+ 
           const canvas = document.createElement('canvas');
           canvas.width = w; canvas.height = h;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, w, h);
           const imageData = ctx.getImageData(0, 0, w, h);
           const pixels = imageData.data;
-
-          // 2-bit BMP: rows padded to 4-byte boundary
+ 
           const bytesPerRow = Math.ceil(w*2/32)*4;
           const pixelDataSize = bytesPerRow * h;
-          const fileSize = 54 + 16 + pixelDataSize; // header + palette + pixels
-
+          const fileSize = 54 + 16 + pixelDataSize;
+ 
           const bmp = new Uint8Array(fileSize);
           const view = new DataView(bmp.buffer);
-
-          // File header
+ 
           bmp[0]=0x42; bmp[1]=0x4D;
           view.setUint32(2, fileSize, true);
           view.setUint32(6, 0, true);
-          view.setUint32(10, 70, true); // 54 header + 16 palette
-
-          // DIB header
+          view.setUint32(10, 70, true);
           view.setUint32(14, 40, true);
           view.setInt32(18, w, true);
-          view.setInt32(22, -h, true); // top-down
+          view.setInt32(22, -h, true);
           view.setUint16(26, 1, true);
-          view.setUint16(28, 2, true); // 2bpp
+          view.setUint16(28, 2, true);
           view.setUint32(30, 0, true);
           view.setUint32(34, pixelDataSize, true);
           view.setUint32(38, 2835, true);
           view.setUint32(42, 2835, true);
           view.setUint32(46, 4, true);
           view.setUint32(50, 4, true);
-
-          // Palette matching device exactly
+ 
           const pal = [0x00,0x00,0x00,0x00, 0x55,0x55,0x55,0x00,
                        0xAA,0xAA,0xAA,0x00, 0xFF,0xFF,0xFF,0x00];
           for (let i=0; i<16; i++) bmp[54+i] = pal[i];
-
-          // Grayscale conversion
+ 
           const gray = new Float32Array(w*h);
           for (let i=0; i<w*h; i++) {
             gray[i] = 0.299*pixels[i*4] + 0.587*pixels[i*4+1] + 0.114*pixels[i*4+2];
           }
-
-          // Percentile contrast stretch — push highlights to white, darks to black
-          // This matches SUMI converter behavior of polarizing toward extremes
+ 
           const sortedG = Float32Array.from(gray).sort();
           const pLow  = sortedG[Math.floor(w*h * 0.08)];
           const pHigh = sortedG[Math.floor(w*h * 0.94)];
@@ -368,47 +368,46 @@
           if (rangeG > 10) {
             for (let i=0; i<w*h; i++) {
               let v = Math.max(0, Math.min(255, (gray[i]-pLow) / rangeG * 255));
-              // S-curve: push darks darker, lights lighter
-              // Increases contrast around midpoint to match SUMI's near-binary output
               v = v / 255;
-              v = v < 0.5
-                ? 2 * v * v
-                : 1 - Math.pow(-2 * v + 2, 2) / 2;
+              v = v < 0.5 ? 2 * v * v : 1 - Math.pow(-2 * v + 2, 2) / 2;
               gray[i] = v * 255;
             }
           }
-
-          // Atkinson dithering matching firmware BitmapHelpers.h AtkinsonDitherer exactly
-          // Thresholds tuned for Xteink X4 e-ink display
+ 
+          // Quantization thresholds:
+          // lighten=false (cover/sumi-cover): standard — gets firmware grayscale pass
+          // lighten=true (interior images): push midtones to white — compensates for
+          //   no grayscale pass on inline EPUB images (firmware design limitation)
+          const t1 = 30;
+          const t2 = lighten ? 60  : 50;
+          const t3 = lighten ? 120 : 140;
+ 
           const PADDING = 4;
           const allocW = w + PADDING * 2;
           const errRow0 = new Float32Array(allocW);
           const errRow1 = new Float32Array(allocW);
           const errRow2 = new Float32Array(allocW);
           const OFF = PADDING;
-
+ 
           for (let y=0; y<h; y++) {
             const rowOffset = 70 + y * bytesPerRow;
             for (let b=0; b<bytesPerRow; b++) bmp[rowOffset+b] = 0;
-
+ 
             for (let x=0; x<w; x++) {
               let adjusted = gray[y*w+x] + errRow0[x+OFF];
               if (adjusted < 0) adjusted = 0;
               if (adjusted > 255) adjusted = 255;
-
-              // Quantize with firmware-matching thresholds
+ 
               let quantized, quantizedValue;
-              if (adjusted < 30)       { quantized = 0; quantizedValue = 15; }
-              else if (adjusted < 50)  { quantized = 1; quantizedValue = 30; }
-              else if (adjusted < 140) { quantized = 2; quantizedValue = 80; }
-              else                     { quantized = 3; quantizedValue = 210; }
-
-              // Pack 2-bit pixel MSB first
+              if      (adjusted < t1) { quantized = 0; quantizedValue = 15; }
+              else if (adjusted < t2) { quantized = 1; quantizedValue = 30; }
+              else if (adjusted < t3) { quantized = 2; quantizedValue = 80; }
+              else                    { quantized = 3; quantizedValue = 210; }
+ 
               const byteIdx = x >>> 2;
               const bitShift = 6 - (x & 3) * 2;
               bmp[rowOffset + byteIdx] |= (quantized << bitShift);
-
-              // Distribute error (Atkinson: 6 neighbours, 1/8 each)
+ 
               const error = (adjusted - quantizedValue) / 8;
               errRow0[x+OFF+1] += error;
               errRow0[x+OFF+2] += error;
@@ -417,35 +416,37 @@
               errRow1[x+OFF+1] += error;
               errRow2[x+OFF]   += error;
             }
-            // Rotate error rows
             errRow0.set(errRow1);
             errRow1.set(errRow2);
             errRow2.fill(0);
           }
-
+ 
           resolve(bmp);
         };
         img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
         img.src = url;
       });
     }
-
+ 
     async function processEpub(file, idx, opts) {
       setStatus(idx, 'Processing...', 'status-processing');
       log(`Processing: ${file.name}`);
       const zip = await JSZip.loadAsync(await file.arrayBuffer());
       const outZip = new JSZip();
-      // mimetype must be first and uncompressed per EPUB spec
       outZip.file('mimetype', 'application/epub+zip', {compression:'STORE'});
       let skipped=0, imagesConverted=0;
       const imageMap = [];
-
+ 
       // First pass: convert images
+      // Cover images use standard thresholds (firmware grayscale pass handles them).
+      // All other images use lighten=true (no grayscale pass for inline EPUB images).
       for (const [path, entry] of Object.entries(zip.files)) {
         if (entry.dir) continue;
         if (opts.convertImages && isImage(path)) {
           const data = await entry.async('uint8array');
-          const bmpData = await imageTo2BitBmp(data, opts);
+          const name = path.toLowerCase().split('/').pop();
+          const isCoverImage = name.startsWith('cover') || name === 'coverdesign.jpg' || name === 'coverdesign.png';
+          const bmpData = await imageTo2BitBmp(data, opts, !isCoverImage);
           if (bmpData) {
             const newPath = path.replace(/\.(jpg|jpeg|png|gif|webp)$/i, '.bmp');
             outZip.file(newPath, bmpData, {compression:'STORE'});
@@ -458,33 +459,43 @@
           }
         }
       }
-
+ 
       // Second pass: all other files
       for (const [path, entry] of Object.entries(zip.files)) {
         if (entry.dir) { outZip.folder(path); continue; }
-        if (path === 'mimetype') continue; // already added first, uncompressed
+        if (path === 'mimetype') continue;
         if (opts.convertImages && isImage(path)) continue;
         if (isBmp(path)) { outZip.file(path, await entry.async('uint8array'), {compression:'STORE'}); continue; }
         if (opts.stripJunk && isJunk(path)) { skipped++; continue; }
         if (opts.stripFonts && isFont(path)) { skipped++; log(`  Stripped font: ${path.split('/').pop()}`, 'warn'); continue; }
         if (opts.stripJs && isJs(path)) { skipped++; continue; }
         if (opts.stripCss && isCss(path)) { skipped++; log(`  Stripped CSS: ${path.split('/').pop()}`, 'warn'); continue; }
-
+ 
         let content = await entry.async('string');
         if (path.match(/\.(html?|xhtml?|xml|opf|ncx)$/i)) {
           if (imageMap.length > 0) content = updateImageRefs(content, imageMap);
-          if (opts.stripCss) content = stripCssFromHtml(content);
+          if (opts.stripCss) {
+            content = stripCssFromHtml(content);
+          } else {
+            // Even when not stripping CSS fully, remove body background color
+            // to prevent heap fragmentation on the device during rendering
+            content = content.replace(/(body\s*\{[^}]*?)background(?:-color)?\s*:[^;]+;/gi, '$1');
+          }
           if (opts.stripJs) content = stripJsFromHtml(content);
           if (opts.fixEncoding) content = fixEncoding(content);
+          // Inject sumi device-hint metadata into OPF
+          if (path.match(/\.opf$/i)) content = injectSumiMetadata(content);
+        }
+        // Strip background from standalone CSS files too
+        if (isCss(path) && !opts.stripCss) {
+          content = content.replace(/(body\s*\{[^}]*?)background(?:-color)?\s*:[^;]+;/gi, '$1');
         }
         outZip.file(path, content);
       }
-
-      // Add sumi-cover.bmp and sumi-thumb.bmp — device prioritizes these
-      // Find cover BMP — check imageMap first (converted covers), then OPF, then name patterns
+ 
+      // Add sumi-cover.bmp and sumi-thumb.bmp
       let coverKey = null;
-
-      // Check imageMap for a converted cover image
+ 
       for (const [oldPath, newPath] of imageMap) {
         const name = oldPath.toLowerCase().split('/').pop();
         if (name.startsWith('cover') || name === 'coverdesign.jpg' || name === 'coverdesign.png') {
@@ -492,20 +503,17 @@
           break;
         }
       }
-
-      // Check OPF metadata for cover item
+ 
       if (!coverKey) {
         for (const [path, entry] of Object.entries(zip.files)) {
           if (!path.toLowerCase().endsWith('.opf')) continue;
           const opfText = await entry.async('string');
-          // Find cover meta id
           let coverId = null;
           const m1 = opfText.match(/name="cover"[^>]*content="([^"]+)"/i);
           const m2 = opfText.match(/content="([^"]+)"[^>]*name="cover"/i);
           if (m1) coverId = m1[1];
           else if (m2) coverId = m2[1];
           if (coverId) {
-            // Find href for that id - scan for id="coverId" in same item tag
             const lines = opfText.split('<item');
             for (const line of lines) {
               if (line.indexOf('id="' + coverId + '"') >= 0 || line.indexOf("id='" + coverId + "'") >= 0) {
@@ -522,28 +530,28 @@
           break;
         }
       }
-
-      // Fall back to name-based detection
+ 
       if (!coverKey) {
         coverKey = Object.keys(outZip.files).find(p => {
           const name = p.toLowerCase().split('/').pop();
           return name.endsWith('.bmp') && (name.startsWith('cover') || name === 'coverdesign.bmp');
         });
       }
+ 
       if (coverKey) {
         const coverData = await outZip.files[coverKey].async('uint8array');
         outZip.file('sumi-cover.bmp', coverData, {compression:'STORE'});
         log('  Added sumi-cover.bmp for device compatibility', 'ok');
-
-        // Generate sumi-thumb.bmp at 271x440 (device thumbnail size)
+ 
         const thumbBmp = await scaleBmp2bit(coverData, 258, 440);
         if (thumbBmp) {
           outZip.file('sumi-thumb.bmp', thumbBmp, {compression:'STORE'});
           log('  Added sumi-thumb.bmp for home screen thumbnail', 'ok');
         }
       }
+ 
       log(`  Images converted: ${imagesConverted}  Files removed: ${skipped}`, 'ok');
-
+ 
       const outBlob = await outZip.generateAsync({type:'blob', compression:'DEFLATE', compressionOptions:{level:6}});
       const outName = file.name.replace('.epub', '-sagatalu.epub');
       const a = document.createElement('a');
@@ -551,13 +559,13 @@
       a.download = outName;
       a.click();
       URL.revokeObjectURL(a.href);
-
+ 
       const origKB = Math.round(file.size/1024);
       const newKB = Math.round(outBlob.size/1024);
       log(`  Done: ${origKB}KB → ${newKB}KB`, 'ok');
       setStatus(idx, 'Done', 'status-done');
     }
-
+ 
     convertBtn.addEventListener('click', async () => {
       convertBtn.disabled = true;
       const opts = getOptions();
